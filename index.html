@@ -1,0 +1,154 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./atad.js"></script>
+    <script src="./code.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/jpg" href="./fav.png"/>
+    <title>SPQR Idle</title>
+</head>
+<body>
+    <section class="topBar"></section>
+    <main>
+        <section class="leftNav">
+            <div class="title"></div>
+            <div class="summary">
+                <div class="age" id="age">Age 15, Day 0</div>
+                <div class="lifespan flex">Life expectancy: <div class="denom" id="lifespan">25</div></div>
+                <div class="segment">
+                    <div class="button" id="pause">Pause</div>
+                </div>
+                <div class="segment flex" id="holdings">
+                    <div class="ico coin"></div>
+                    <div id="balance">0</div> Đ
+                </div>    
+                <div class="segment flex vert">
+                    <div class="flex disp">Net: <div id="net" class="denom">0</div> Đ</div>
+                    <div class="flex disp">Income: <div id="income" class="denom">0</div> Đ</div>
+                    <div class="flex disp">Expenses: <div id="expense" class="denom">0</div> Đ</div>
+                    <div class="flex disp">Tithings: <div id="tithings" class="denom">0</div> Đ</div>
+                </div>
+                <div class="segment">
+                    <div class="leftTitle">My Profession</div>
+                    <div class="leftBar" id="myProf">
+                        <div class="barFill jobFill active" style="width: 0%;"></div>
+                        <div class="barLabel"></div>
+                        <div class="barLevel"></div>
+                    </div>
+                    <div class="leftTitle">Skilling Up</div>
+                    <div class="leftBar" id="mySkill">
+                        <div class="barFill skillFill active" style="width: 0%;"></div>
+                        <div class="barLabel"></div>
+                        <div class="barLevel"></div>
+                    </div>
+                </div>
+                <div class="segment">
+                    <div class="leftTitle">Worshipping</div>
+                    <div id="godsPanel" class="godsDisplay"></div>
+                </div>
+                <div class="segment noDisplay" id="godMulti">
+                    <div class="leftTitle">Divine Blessing</div>
+                    <div class="flex disp">1x to all XP gain</div>
+                </div>
+                <div class="segment noDisplay" id="providenceMulti">
+                    <div class="leftTitle">Providence</div>
+                    <div class="flex disp">1x to all XP gain</div>
+                </div>
+            </div>
+        </section>
+        <section class="tabs">
+            <div class="tabNav">
+                <div class="tab active" id="jobsTab">Jobs</div>
+                <div class="tab" id="skillsTab">Skills</div>
+                <div class="tab" id="lodgingTab">Homes</div>
+                <div class="tab" id="shopTab">Items</div>
+                <div class="tab" id="divineTab">Gods</div>
+                <div class="tab noDisplay" id="retryTab">Rebirth</div>
+                <div class="rightTabs">
+                    <div class="tab" id="boonTab">Boons</div>
+                    <div class="tab" id="modesTab">Modes</div>
+                    <div class="tab" id="settingsTab">Settings</div>
+                </div>
+            </div>
+            <div class="tabContents">
+                <div class="main" id="jobs"></div>
+                <div class="main noDisplay" id="skills"></div>
+                <div class="main noDisplay" id="lodging"></div>
+                <div class="main noDisplay" id="shop"></div>
+                <div class="main noDisplay" id="divine"></div>
+                <div class="main noDisplay" id="boon"></div>
+                <div class="main noDisplay" id="modes">
+                    <div class="informational">
+                        <p>You are currently playing in: <b id="modeDisplay">Normal Mode</b></p>
+                        <p>You have earned the right to choose a different Mode to attempt.</p>
+                        <p>When you begin a new Mode run, all progress will be fully reset, except for Providence.</p>
+                        <p>To complete a Mode you must hold the position of Consul for 365 consecutive days.</p>
+                        <p>You may abandon an attempt at a Mode run at any time by selecting another from this screen.</p>
+                    </div>
+                    <div class="tableSpace"></div>
+                    <span id="modesSpace"></span>
+                    <div class="informational segment rGhost">
+                        <p>Note: You can (and will likely need to) complete Modes multiple times and receive rewards each time.</p>
+                    </div>
+                    <div class="tableSpace"></div>
+                    <div class="informational segment">
+                        <p>Curses may be added to any Mode run and will remain active until/unless disabled during the run.</p>
+                        <p>Curses have a smaller impact on gameplay than Modes, but will definitely make things harder.</p>
+                        <p>Your Providence reward will be increased for every Curse still active when you complete the Mode.</p>
+                        <p>You can review your current Curses (and remove them from your run if you choose) in the Boons tab.</p>
+                    </div>
+                </div>
+                <div class="main informational noDisplay" id="retry">
+                    <div>
+                        <p>Your life has ended.</p>
+                        <p>You have a chance to start again.</p>
+                        <p>Your previous progress will not be wasted, however.</p>
+                        <p>Every level of your best progress will contribute 10% faster XP gain next time.</p>
+                        <p>This applies to your Professions, Skills and Worship.</p>
+                    </div>
+                    <div class="segment">
+                        <p>If you are ever to become Consul, you will need to start again...</p>
+                    </div>
+                    <div class="segment">
+                        <div class="button alert" id="rebirth">Rebirth</div>
+                    </div>
+                    <div class="segment" id="godsHelp">
+                        <span id="noGods">
+                            <p>Perhaps you could elist help from the gods?</p>
+                            <p>They will want at least 100 levels of worship...</p>
+                        </span>
+                        <span id="yesGods" class="noDisplay">
+                            <p>Your devotion has earned you a gift from <a id="godWhich"></a></p>
+                            <div id="godGet"></div>
+                            <p>You may receive one gift per god which will remain active unless you choose to reset it.</p>
+                            <p>Accepting will grant you a x<a id="nextMultiAmount">x1.25</a> bonus to all XP gain (your new Divine Blessing) as well as adding the offered boon.</p>
+                            <p>Accepting will also reset <b>all</b> progress aside from your Boons and Divine Blessing.</p>
+                            <div class="segment">
+                                <div class="button alert" id="getBoon">Accept</div>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+                <div class="main noDisplay" id="settings">
+                    <div class="button longButton" id="export">Export Data</div>
+                    <div class="button longButton" id="import">Import Data</div>
+                    <div class="segment">
+                        <input type="text" id="impExp" class="impExp">
+                    </div>
+                    <div class="segment">
+                        <div class="button longButton" id="fixSave">Soft Reset</div>
+                    </div>
+                    <div class="segment">
+                        <div class="button longButton" id="hardReset">Hard Reset</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

@@ -25,6 +25,7 @@ function createDivs(){
     for( key in home ){ appendHome( key ); }
     for( key in items ){ appendItem( key ); }
     for( key in gods ){ appendDivine( key ); }
+    for( key in boons ){ appendBoon( key ); }
     for( key in modes ){ appendMode( key ); }
     appendCostPreviews();
 }
@@ -41,6 +42,7 @@ function ticker( dur ){
         lap.ticks++;
         if( lap.ticks % 10 == 0 ){
             if( auto.rebirth.automate ){ automate( `rebirth` ); }
+            countdown();
             saveState();
             updateTableValues();
         }
@@ -68,6 +70,8 @@ function clicked( elem ){
     else if( i == `export` ){ exportState(); }
     else if( i == `import` ){ importState(); }
     else if( i == `getBoon` ){ gainBoon( elem.getAttribute(`data-god`) ); }
+    else if( c.contains(`mode`) && !c.contains(`active`) ){ changeMode( i, true ); }
+    else if( c.contains(`confirm`) ){ changeMode( longLap.nextMode, false ); }
 }
 
 function changed( elem ){
@@ -102,6 +106,14 @@ function incrementDay(){
         let a = makeAge( lap.day );
         if( a.years + ( a.days / 365 ) >= lap.lifespan ){ endLap(); }
         document.getElementById(`age`).innerHTML = `Age ${a.years}, Day ${a.days}`;
+        if( lap.isConsul ){ lap.consulDays++; }
+        if( lap.consulDays >= 365 ){
+            document.getElementById(`modesTab`).classList.remove(`noDisplay`);
+            tabChange(`modesTab`);
+            longLap.unlocked = true;
+            lap.isConsul = false;
+            lap.consulDays = 0;
+        }
         updateGlobalIncome();
         checkUnlocks();
     }
@@ -511,6 +523,8 @@ function changeJob( job ){
         document.getElementById(`myProf`).children[0].style = `
         width:${lap.prof[job].xp / lap.prof[job].next * 100}%;
         transition:all linear ${tickSpeed()}ms;`;
+        if( job == `consul` ){ lap.isConsul = true; }
+        else{ lap.isConsul = false; consulDays = 0; }
         updateGlobalIncome();
     }
 }
@@ -548,6 +562,30 @@ function changeSkill( s ){
         document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[s].level;
         document.getElementById( lap.mySkill + `Fill` ).classList.add(`active`);
         updateAllXP();
+    }
+}
+
+function changeMode( m, warning ){
+    if( warning ){
+        if( longLap.safety == null ){
+            longLap.nextMode = m;
+            longLap.safety = 20;
+            let d = document.createElement(`div`);
+            d.classList = `modeWarning`;
+            d.innerHTML = `<p>You are about to leave your current mode</p>
+            <p>Doing so will reset all progress, except for your current Providence.</p>
+            <p>Are you sure you want to proceed?</p>
+            <div class="button confirm">Yes [<a id="countDown">20</a>]</div>`
+            document.getElementById(`modes`).appendChild(d)
+        }
+    }
+    else{
+        longLap.mode = JSON.parse( JSON.stringify( longLap.nextMode ) ).replace(`Mode`,``);
+        longLap.nextMode = null;
+        longLap.safety = null;
+        document.getElementById(`modes`).removeChild( document.getElementById(`modes`).lastChild );
+        rebirth( `long` );
+        document.getElementById(`modeDisplay`).innerHTML = titleCase( longLap.mode );
     }
 }
 
@@ -723,6 +761,14 @@ function endLap(){
 }
 
 function rebirth( grade ){
+    if( grade == `med` ){ watermarks = {}; } // Medium Lap
+    if( grade == `long` ){
+        watermarks = {};
+        medLap.multi = 1;
+        for( b in medLap.boons ){ medLap.boons[b] = false; }
+        document.getElementById(`boonTab`).classList.add(`noDisplay`);
+        profOverride();
+    }
     for( key in lap.prof ){
         let l = lap.prof[key].level
         if( watermarks[key] < lap.prof[key].level ){ watermarks[key] = l }
@@ -735,7 +781,6 @@ function rebirth( grade ){
         let l = lap.gods[key].level
         if( watermarks[key] < lap.gods[key].level ){ watermarks[key] = l }
     }
-    if( grade == `med` ){ watermarks = {}; } // Medium Lap
     lap.prof = {};
     lap.skills = {};
     lap.gods = {};
@@ -763,7 +808,7 @@ function rebirth( grade ){
     changeHome(`homeless`);
     changeSkill(`focus`);
     fixActive();
-    fixToggleDisplay();
+    fixToggleDisplay();    
 }
 
 function lapAll(){
@@ -926,10 +971,21 @@ function buildScale(){
 function profOverride(){
     prof = {}
     let p = 1, pm = 1, b = 7.5;
-    for( key in namedProfessions ){
-        let n = namedProfessions[key];
-        let pro = namedProfessions[key+1];
-        let r = namedProfessions[key-1]
+    let longProf = [];
+    for( key in namedProfessions ){ longProf.push(namedProfessions[key]); }
+    // if( longLap.mode == `bureaucratic` ){
+    //     longProf.pop();
+    //     longProf.push(`bureaucrat_rank_1`);
+    //     longProf.push(`bureaucrat_rank_2`);
+    //     longProf.push(`bureaucrat_rank_3`);
+    //     longProf.push(`bureaucrat_rank_4`);
+    //     longProf.push(`bureaucrat_rank_5`);
+    //     longProf.push(`consul`);
+    // }
+    for( key in longProf ){
+        let n = longProf[key];
+        let pro = longProf[key+1];
+        let r = longProf[key-1]
         prof[n] = {
             category: 0
             , pay: p
@@ -1030,6 +1086,7 @@ function essentialUI(){
         <div class="c20">Reward</div>
         <div class="c10">Attempt</div>
     </div>`
+    document.getElementById(`boon`).innerHTML = `<span id="boonSpace"></span>`
     document.getElementById(`godsPanel`).innerHTML = h;
     // document.getElementById(`subJobs`).innerHTML = template.replace(`Q`,`prof`);
     // a = `<div class="optionBox">Automate:
@@ -1050,83 +1107,90 @@ function buildDiv( type, a ){
     let output = ``;
     if( type == 'job' ){
         output = `<div class="row noDisplay">
-        <div class="c25 c0">
-            <div class="bar profBar" id="${a}">
-                <div class="barFill jobFill" id="${a}Fill" style="width: 0%;"></div>
-                <div class="barLabel">${titleCase(a)}</div>
+            <div class="c25 c0">
+                <div class="bar profBar" id="${a}">
+                    <div class="barFill jobFill" id="${a}Fill" style="width: 0%;"></div>
+                    <div class="barLabel">${titleCase((a.replaceAll(`_`,` `)).replaceAll(`,`,` `))}</div>
+                </div>
             </div>
-        </div>
-        <div class="c10">${lap.prof[a].level}</div>
-        <div class="c15">+${niceNumber( getEarnings( a ).income )} Đ</div>
-        <div class="c20" id="${a}XP">${niceNumber( getXP( a, `prof` ) )}</div>
-        <div class="c20">${prof[a].base}</div>
-        <div class="c10" id="${a}Max">${lap.prof[a].max}</div>
-    </div>`
+            <div class="c10">${lap.prof[a].level}</div>
+            <div class="c15">+${niceNumber( getEarnings( a ).income )} Đ</div>
+            <div class="c20" id="${a}XP">${niceNumber( getXP( a, `prof` ) )}</div>
+            <div class="c20">${prof[a].base}</div>
+            <div class="c10" id="${a}Max">${lap.prof[a].max}</div>
+        </div>`
     }
     else if( type == 'home' ){
         output = `<div class="row noDisplay">
-        <div class="c20 c01">${titleCase(a)}</div>
-        <div class="c15">
-            <div class="button home" id="${a}">Move</div>
-        </div>
-        <div class="c15">-${niceNumber( home[a].cost )} Đ</div>
-        <div class="c15" id="${a}Lifespan">${niceNumber( (home[a].life * lap.skills.vitality.boost * lap.skills.athletics.boost * lap.gods.vesta.boost ) )}</div>
-        <div class="c35">x${niceNumber(1+(home[a].boost-1))} to all XP gain</div>
-    </div>`
+            <div class="c20 c01">${titleCase(a)}</div>
+            <div class="c15">
+                <div class="button home" id="${a}">Move</div>
+            </div>
+            <div class="c15">-${niceNumber( home[a].cost )} Đ</div>
+            <div class="c15" id="${a}Lifespan">${niceNumber( (home[a].life * lap.skills.vitality.boost * lap.skills.athletics.boost * lap.gods.vesta.boost ) )}</div>
+            <div class="c35">x${niceNumber(1+(home[a].boost-1))} to all XP gain</div>
+        </div>`
     }
     else if( type == 'item' ){
         output = `<div class="row noDisplay">
-        <div class="c20 c01">${titleCase((a.replace(`_`,` `)).replace(`,`,` `))}</div>
-        <div class="c15">
-            <div class="button item" id="${a}">Hire</div>
-        </div>
-        <div class="c15">-${niceNumber( items[a].cost )} Đ</div>
-        <div class="c20">${items[a].eff.replace(`Q`,lap.items[a].amount)}</div>
-        <div class="c30"><div class="button upgrade" id="${a}Upgrade">Upgrade</div><div class="upgCost">-${niceNumber( getUpgradeCost( a ) )} Đ</div></div>
-    </div>`
+            <div class="c20 c01">${titleCase((a.replace(`_`,` `)).replace(`,`,` `))}</div>
+            <div class="c15">
+                <div class="button item" id="${a}">Hire</div>
+            </div>
+            <div class="c15">-${niceNumber( items[a].cost )} Đ</div>
+            <div class="c20">${items[a].eff.replace(`Q`,lap.items[a].amount)}</div>
+            <div class="c30"><div class="button upgrade" id="${a}Upgrade">Upgrade</div><div class="upgCost">-${niceNumber( getUpgradeCost( a ) )} Đ</div></div>
+        </div>`
     }
     else if( type == 'skill' ){
         output = `<div class="row noDisplay">
-        <div class="c25 c0">
-        ${skills[a].parent ? '' : '<div class="space"></div>' }
-            <div class="bar skillBar" id="${a}">
-                <div class="barFill skillFill" id="${a}Fill" style="width: 0%;"></div>
-                <div class="barLabel">${titleCase(a)}</div>
+            <div class="c25 c0">
+            ${skills[a].parent ? '' : '<div class="space"></div>' }
+                <div class="bar skillBar" id="${a}">
+                    <div class="barFill skillFill" id="${a}Fill" style="width: 0%;"></div>
+                    <div class="barLabel">${titleCase(a)}</div>
+                </div>
             </div>
+            <div class="c10">0</div>
+            <div class="c25" id="${a}Boost">${skills[a].eff.replace(`Q`, niceNumber( lap.skills[a].boost ) )}</div>
+            <div class="c15" id="${a}XP">1</div>
+            <div class="c15">100</div>
+            <div class="c10" id="${a}Max">${lap.skills[a].max}</div>
+            <div class="toggleShow skillsToggle noDisplay"><input type="checkbox" name="${a}" data-type="toggle" data-root="skills" checked></div>
         </div>
-        <div class="c10">0</div>
-        <div class="c25" id="${a}Boost">${skills[a].eff.replace(`Q`, niceNumber( lap.skills[a].boost ) )}</div>
-        <div class="c15" id="${a}XP">1</div>
-        <div class="c15">100</div>
-        <div class="c10" id="${a}Max">${lap.skills[a].max}</div>
-        <div class="toggleShow skillsToggle noDisplay"><input type="checkbox" name="${a}" data-type="toggle" data-root="skills" checked></div>
-    </div>
-    <div class="row rGhost" id="${a}Preview"><div class="c100" id="profNext"></div></div>`
+        <div class="row rGhost" id="${a}Preview"><div class="c100" id="profNext"></div></div>`
     }
     else if( type == 'gods' ){
         output = `<div class="row">
-        <div class="c25 c0">
-            <div class="bar divineBar" id="${a}">
-                <div class="barFill godsFill" id="${a}Fill" style="width: 0%;"></div>
-                <div class="barLabel"><div class="tinyGod ${a}"></div>${titleCase(a)}</div>
+            <div class="c25 c0">
+                <div class="bar divineBar" id="${a}">
+                    <div class="barFill godsFill" id="${a}Fill" style="width: 0%;"></div>
+                    <div class="barLabel"><div class="tinyGod ${a}"></div>${titleCase(a)}</div>
+                </div>
             </div>
-        </div>
-        <div class="c10">0</div>
-        <div class="c25" id="${a}Boost">${gods[a].eff.replace(`Q`, niceNumber( lap.gods[a].boost ))}</div>
-        <div class="c15" id="${a}XP">1</div>
-        <div class="c15">100</div>
-        <div class="c10" id="${a}Max">${lap.gods[a].max}</div>
-    </div>`
+            <div class="c10">0</div>
+            <div class="c25" id="${a}Boost">${gods[a].eff.replace(`Q`, niceNumber( lap.gods[a].boost ))}</div>
+            <div class="c15" id="${a}XP">1</div>
+            <div class="c15">100</div>
+            <div class="c10" id="${a}Max">${lap.gods[a].max}</div>
+        </div>`
     }
     else if( type == 'mode' ){
         output = `<div class="row">
-        <div class="c15 c0">${titleCase(a)}</div>
-        <div class="c55">${modes[a].eff}</div>
-        <div class="c20">+${modes[a].reward} Providence</div>
-        <div class="c10">
-            <div id="${a}Mode" class="button mode">Attempt</div>
-        </div>
-    </div>`
+            <div class="c15 c0">${titleCase(a)}</div>
+            <div class="c55">${modes[a].eff}</div>
+            <div class="c20">+${modes[a].reward} Providence</div>
+            <div class="c10">
+                <div id="${a}Mode" class="button mode">Attempt</div>
+            </div>
+        </div>`
+    }
+    else if( type == 'boon' ){
+        output = `<div class="boonBox" data-god="${a}">
+            <div class="boonText">${titleCase( a )}</div>
+            <div class="bigIco ${a}"></div>
+            <div class="boonText">${boons[a]}</div>
+        </div>`
     }
     return output;
 }
@@ -1191,6 +1255,12 @@ function appendSkill( s ){
     // }
 }
 
+function appendBoon( b ){
+    let x = document.createElement(`div`);
+    document.getElementById(`boonSpace`).appendChild(x);
+    document.getElementById(`boonSpace`).lastChild.outerHTML = buildDiv( `boon`, b );
+}
+
 function appendMode( m ){
     let x = document.createElement(`div`);
     document.getElementById(`modesSpace`).appendChild(x);
@@ -1235,7 +1305,24 @@ function fixActive(){
         }
     }
     document.getElementById(`${longLap.mode}Mode`).classList.add(`active`);  
-    document.getElementById(`${longLap.mode}Mode`).innerHTML = `Active`;  
+    document.getElementById(`${longLap.mode}Mode`).innerHTML = `Active`;
+    let boonC = document.querySelectorAll(`.boonBox`);
+    for( let i = 0; i < boonC.length; i++ ){
+        let g = boonC[i].getAttribute(`data-god`);
+        if( medLap.boons[g] ){ 
+            boonC[i].classList.remove(`unearned`);
+            boonC[i].classList.add(`earned`);
+        }
+        else{
+            boonC[i].classList.add(`unearned`);
+            boonC[i].classList.remove(`earned`);
+        }
+    }
+    if( countBoons() > 0 ){ document.getElementById(`boonTab`).classList.remove(`noDisplay`); }
+    if( longLap.unlocked ){
+        document.getElementById(`modesTab`).classList.remove(`noDisplay`);
+        document.getElementById(`providenceMulti`).classList.remove(`noDisplay`);
+    }
 }
 
 function fixToggleDisplay( elem, e ){
@@ -1310,6 +1397,19 @@ function tabChange( target ){
     document.getElementById(target).classList.remove(`alert`);    
 }
 
+function countdown(){
+    if( longLap.safety == null ){}
+    else if( longLap.safety == 0 ){
+        longLap.nextMode = null;
+        longLap.safety = null;
+        document.getElementById(`modes`).removeChild( document.getElementById(`modes`).lastChild );
+    }
+    else{
+        longLap.safety -= 1;
+        document.getElementById(`countDown`).innerHTML = longLap.safety;
+    }
+}
+
 function saveState(){
     var state = {};
     state.lap = lap;
@@ -1340,6 +1440,8 @@ function loadState() {
         changeHome( `homeless` );
         changeSkill( `focus` );
     }
+    longLap.safety = null;
+    longLap.nextMode = null;
     setTimeout(() => {
         if( lap.dead ){ rebirth(); }
         else{

@@ -127,9 +127,9 @@ p{ margin-top: 0; }
     display: flex;
     flex-direction: column;
 }
-.main:last-child{    
+/* .main:last-child{    
     align-items: flex-end;
-}
+} */
 
 table{
     width: 100%;
@@ -169,6 +169,46 @@ tr{
     height: 2rem;
     margin: 0 1rem 0 0;
 }
+.bigIco{
+    width: 4rem;
+    height: 4rem;
+    min-height: 4rem;
+    margin: 0 0 1 0;
+}
+
+#boonSpace{
+    position: relative;
+    padding: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-around;
+    font-size: 1.5rem;
+    width: 100%;
+    height: 100%;
+}
+.boonBox{
+    width: 25%;
+    height: 10rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin: 1rem;
+}
+.boonText{
+    margin: 1rem;
+    min-height: 2rem;
+}
+.unearned{ opacity: 0.25; }
+.earned{ animation: pulse 5s infinite; }
+@keyframes pulse {
+    0% {filter: drop-shadow( 0 0 0.5rem #51184900 ); }
+    50% {filter: drop-shadow( 0 0 0.5rem #511849FF ); }
+    100% {filter: drop-shadow( 0 0 0.5rem #51184900 ); }
+}
+
 .coin{ background-image: url(./coin.png);}
 
 .button{    
@@ -484,6 +524,10 @@ tr{
     position: absolute;
     right: 1rem;
     top: 0.65rem;
+}
+
+#countDown{
+    pointer-events: none;
 }
 
 

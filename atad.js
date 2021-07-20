@@ -36,6 +36,8 @@ var lap = {
     , skills: {}
     , items: {}
     , homes: {}
+    , isConsul: false
+    , consulDays: 0
 }
 
 var medLap =  {
@@ -56,6 +58,15 @@ var medLap =  {
     }
 }
 
+var longLap = {
+    providence: 1
+    , safety: null
+    , nextMode: null
+    , mode: `normal`
+    , curses: []
+    , unlocked: false
+}
+
 var boons = {
     jupiter: `x1.1 worship XP per god being worshipped`
     , juno: `1.5x worship XP for gods whose blessing you've earned`
@@ -69,13 +80,6 @@ var boons = {
     , diana: `Item Upgrade costs scale exponent reduced by 25%`
     , mercury: `x1.2 game speed increase`
     , vesta: `+5 years of base life expectancy`
-}
-
-var longLap = {
-    providence: 1
-    , mode: `normal`
-    , curses: []
-    , unlocked: false
 }
 
 var prof = {}

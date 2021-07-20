@@ -70,8 +70,8 @@
                 <div class="tab" id="divineTab">Gods</div>
                 <div class="tab noDisplay" id="retryTab">Rebirth</div>
                 <div class="rightTabs">
-                    <div class="tab" id="boonTab">Boons</div>
-                    <div class="tab" id="modesTab">Modes</div>
+                    <div class="tab noDisplay" id="boonTab">Boons</div>
+                    <div class="tab noDisplay" id="modesTab">Modes</div>
                     <div class="tab" id="settingsTab">Settings</div>
                 </div>
             </div>
@@ -84,7 +84,7 @@
                 <div class="main noDisplay" id="boon"></div>
                 <div class="main noDisplay" id="modes">
                     <div class="informational">
-                        <p>You are currently playing in: <b id="modeDisplay">Normal Mode</b></p>
+                        <p>You are currently playing in: <b id="modeDisplay">Normal</b> Mode</p>
                         <p>You have earned the right to choose a different Mode to attempt.</p>
                         <p>When you begin a new Mode run, all progress will be fully reset, except for Providence.</p>
                         <p>To complete a Mode you must hold the position of Consul for 365 consecutive days.</p>
@@ -96,12 +96,12 @@
                         <p>Note: You can (and will likely need to) complete Modes multiple times and receive rewards each time.</p>
                     </div>
                     <div class="tableSpace"></div>
-                    <div class="informational segment">
+                    <!-- <div class="informational segment">
                         <p>Curses may be added to any Mode run and will remain active until/unless disabled during the run.</p>
                         <p>Curses have a smaller impact on gameplay than Modes, but will definitely make things harder.</p>
                         <p>Your Providence reward will be increased for every Curse still active when you complete the Mode.</p>
                         <p>You can review your current Curses (and remove them from your run if you choose) in the Boons tab.</p>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="main informational noDisplay" id="retry">
                     <div>
@@ -136,7 +136,9 @@
                 </div>
                 <div class="main noDisplay" id="settings">
                     <div class="button longButton" id="export">Export Data</div>
-                    <div class="button longButton" id="import">Import Data</div>
+                    <div class="segment">
+                        <div class="button longButton" id="import">Import Data</div>
+                    </div>
                     <div class="segment">
                         <input type="text" id="impExp" class="impExp">
                     </div>

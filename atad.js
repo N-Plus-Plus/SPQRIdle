@@ -79,7 +79,7 @@ var boons = {
     , minerva: `Int and Wis get x2 boost from Focus`
     , diana: `Item Upgrade costs scale exponent reduced by 25%`
     , mercury: `x1.2 game speed increase`
-    , vesta: `+5 years of base life expectancy`
+    , vesta: `+5 years of life expectancy`
 }
 
 var prof = {}
@@ -364,22 +364,22 @@ var modes = {
         eff: `All basic functionality enabled.`
         , reward: 0
     }
-    , bureaucratic: {
-        eff: `Five additional professions added between Beggar and Consul.`
-        , reward: 0.125
-    }
-    , degenerative: {
-        eff: `Skills and Jobs slowly decay XP when not being actively pursued.`
-        , reward: 0.25
-    }
+    // , bureaucratic: {
+    //     eff: `Five additional professions added between Beggar and Consul.`
+    //     , reward: 0.125
+    // }
     , recession: {
         eff: `Salaries are halved and all costs are doubled.`
-        , reward: 0.5
+        , reward: 0.25
     }
-    , athiest: {
-        eff: `Gods, Vestments and Relic removed. Divine Blessing unavailable.`
-        , reward: 1
-    }
+    // , degenerative: {
+    //     eff: `Skills and Jobs slowly decay XP when not being actively pursued.`
+    //     , reward: 0.25
+    // }
+    // , athiest: {
+    //     eff: `Gods, Vestments and Relic removed. Divine Blessing unavailable.`
+    //     , reward: 1
+    // }
 }
 
 var auto = {

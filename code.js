@@ -113,6 +113,8 @@ function incrementDay(){
             longLap.unlocked = true;
             lap.isConsul = false;
             lap.consulDays = 0;
+            longLap.providence += modes[longLap.mode].reward;
+            updateTableValues();
         }
         updateGlobalIncome();
         checkUnlocks();
@@ -165,6 +167,7 @@ function getEarnings( o ){
     if( o == undefined ){ o = lap.myProf; }
     let p = Math.floor( prof[o].pay * scale[prof[o].payMod] );
     output.income = Math.floor( p * logThis( global.scale, lap.prof[o].level + 3 ) + ( p * lap.prof[o].level / 2 ) );
+    if( longLap.mode == `recession` ){ output.income /= 2; }
     output.income *= global.wealthBoost;
     output.income *= lap.skills.negotiation.boost;
     output.income *= lap.skills.precision.boost;
@@ -193,6 +196,7 @@ function sumItemcosts(){
     for( key in lap.items ){
         if( lap.items[key].active ){ output += Math.max( 10, items[key].cost ); }
     }
+    if( longLap.mode == `recession` ){ output.income *= 2; }
     return output;
 }
 
@@ -936,6 +940,7 @@ function updateTableValues(){
         let par = document.getElementById(keyH).parentElement.parentElement;
         par.children[2].innerHTML = `-${niceNumber( Math.floor( getCost( keyH, `home` ) ) )}  Đ`;
     }
+    document.getElementById(`providenceMulti`).children[1].innerHTML = `x${longLap.providence} to all XP gain`;
 }
 
 function getCost( h, type ){
@@ -946,6 +951,7 @@ function getCost( h, type ){
     }
     else if( type == `item` ){ o = items[h].cost; }
     o *= lap.skills.haggling.boost * lap.skills.sense.boost * lap.skills.appraisal.boost * lap.gods.neptune.boost;
+    if( longLap.mode == `recession` ){ output.income *= 2; }
     o = round( o, 0 );
     return o;
 }

@@ -65,6 +65,7 @@ var longLap = {
     , mode: `normal`
     , curses: []
     , unlocked: false
+    , complete: false
 }
 
 var boons = {

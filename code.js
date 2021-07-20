@@ -113,8 +113,11 @@ function incrementDay(){
             longLap.unlocked = true;
             lap.isConsul = false;
             lap.consulDays = 0;
-            longLap.providence += modes[longLap.mode].reward;
-            updateTableValues();
+            if( !longLap.complete ){
+                longLap.providence += modes[longLap.mode].reward;
+                updateTableValues();
+                longLap.complete = true;
+            }
         }
         updateGlobalIncome();
         checkUnlocks();
@@ -771,6 +774,7 @@ function rebirth( grade ){
         medLap.multi = 1;
         for( b in medLap.boons ){ medLap.boons[b] = false; }
         document.getElementById(`boonTab`).classList.add(`noDisplay`);
+        longLap.complete = false;
         profOverride();
     }
     for( key in lap.prof ){
@@ -951,7 +955,7 @@ function getCost( h, type ){
     }
     else if( type == `item` ){ o = items[h].cost; }
     o *= lap.skills.haggling.boost * lap.skills.sense.boost * lap.skills.appraisal.boost * lap.gods.neptune.boost;
-    if( longLap.mode == `recession` ){ output.income *= 2; }
+    if( longLap.mode == `recession` ){ o *= 2; }
     o = round( o, 0 );
     return o;
 }

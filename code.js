@@ -739,14 +739,8 @@ function checkUnlocks(){
         }
     }
     if( none ){ prev.classList.add(`noDisplay`); }
-    if( medLap.multi > 1 ){ 
-        document.getElementById(`godMulti`).classList.remove(`noDisplay`);
-        // document.getElementById(`boonTab`).classList.remove(`noDisplay`);
-    }
-    else{
-        document.getElementById(`godMulti`).classList.add(`noDisplay`);
-        // document.getElementById(`boonTab`).classList.add(`noDisplay`);
-    }
+    if( medLap.multi > 1 ){ document.getElementById(`godMulti`).classList.remove(`noDisplay`); }
+    else{ document.getElementById(`godMulti`).classList.add(`noDisplay`); }
     document.getElementById(`godMulti`).children[1].innerHTML = `${niceNumber(medLap.multi)}x to all XP gain`;
 }
 
@@ -783,7 +777,6 @@ function rebirth( grade ){
         watermarks = {};
         medLap.multi = 1;
         for( b in medLap.boons ){ medLap.boons[b] = false; }
-        document.getElementById(`boonTab`).classList.add(`noDisplay`);
         longLap.complete = false;
         for( t in auto.skills.toggles ){ auto.skills.toggles[t] = false; }
         profOverride( longLap.mode == `bureaucratic` );
@@ -1337,7 +1330,7 @@ function fixActive(){
             boonC[i].classList.remove(`earned`);
         }
     }
-    if( countBoons() > 0 ){ document.getElementById(`boonTab`).classList.remove(`noDisplay`); }
+    if( countBoons() > 0 || longLap.unlocked ){ document.getElementById(`boonTab`).classList.remove(`noDisplay`); }
     if( longLap.unlocked ){
         document.getElementById(`modesTab`).classList.remove(`noDisplay`);
         document.getElementById(`providenceMulti`).classList.remove(`noDisplay`);

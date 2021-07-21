@@ -199,7 +199,7 @@ function sumItemcosts(){
     for( key in lap.items ){
         if( lap.items[key].active ){ output += Math.max( 10, items[key].cost ); }
     }
-    if( longLap.mode == `recession` ){ output.income *= 2; }
+    if( longLap.mode == `recession` ){ output *= 2; }
     return output;
 }
 

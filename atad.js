@@ -1,4 +1,4 @@
-var version = 0.07
+var version = 0.08
 
 var global = {
     speed: 100
@@ -86,21 +86,21 @@ var boons = {
 var prof = {}
 var namedProfessions = [
     `beggar`
-    , `stablehand`
+    , `farmhand`
     , `laborer`
     , `journeyman`
     , `craftsman`
     , `artisan`
     , `shopkeeper`
     , `merchant`
+    , `trader`
     , `accountant`
     , `guildmaster`
-    , `financeer`
+    , `investor`
     , `official`
-    , `emissary`
-    , `diplomat`
     , `senator`
-    , `elector`
+    , `censor`
+    , `praetor`
     , `consul`
 ]
 
@@ -363,12 +363,12 @@ var items = {
 var modes = {
     normal: {
         eff: `All basic functionality enabled.`
-        , reward: 0
+        , reward: 0.05
     }
-    // , bureaucratic: {
-    //     eff: `Five additional professions added between Beggar and Consul.`
-    //     , reward: 0.125
-    // }
+    , bureaucratic: {
+        eff: `Five additional professions added on your path to Consul.`
+        , reward: 0.125
+    }
     , recession: {
         eff: `Salaries are halved and all costs are doubled.`
         , reward: 0.25

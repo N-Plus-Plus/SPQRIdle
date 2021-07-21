@@ -3,14 +3,14 @@ window.addEventListener(`mousedown`, function (e) { clicked( e.target, false ) }
 window.addEventListener(`change`, function (e) { changed( e.target ) } );
 
 function onLoad(){
+    loadState();
     buildScale();
     buildSi();
-    profOverride();
+    profOverride( longLap.mode == `bureaucratic` );
     homeOverride();
     essentialUI();
     lapAll();
     createDivs();
-    loadState();
     fixActive();
     fixToggleDisplay();
     updateWatermarks();
@@ -178,7 +178,6 @@ function getEarnings( o ){
     if( medLap.boons.venus ){ output.income *= 1.5; }
     output.income = Math.floor( output.income );
     output.expense = 0;
-    // output.expense += home[lap.myHome].cost;
     output.expense += sumItemcosts();
     output.expense *= lap.skills.sense.boost;
     output.expense *= lap.skills.haggling.boost;
@@ -517,7 +516,7 @@ function changeJob( job ){
     if( lap.dead ){}
     else if( lap.myProf == job ){
         document.getElementById( lap.myProf ).children[0].classList.add(`active`);
-        document.getElementById(`myProf`).children[1].innerHTML = titleCase( job );
+        document.getElementById(`myProf`).children[1].innerHTML = String( titleCase((job.replaceAll(`_`,` `) ))).replaceAll(`,`,` `);
     }
     else{
         if( lap.myProf !== `` ){
@@ -526,7 +525,7 @@ function changeJob( job ){
         }
         lap.myProf = job;
         document.getElementById( lap.myProf ).children[0].classList.add(`active`);
-        document.getElementById(`myProf`).children[1].innerHTML = titleCase( job );
+        document.getElementById(`myProf`).children[1].innerHTML = String( titleCase((job.replaceAll(`_`,` `) ))).replaceAll(`,`,` `);
         document.getElementById(`myProf`).children[2].innerHTML = lap.prof[job].level;
         document.getElementById(`myProf`).children[0].style = `
         width:${lap.prof[job].xp / lap.prof[job].next * 100}%;
@@ -780,7 +779,8 @@ function rebirth( grade ){
         document.getElementById(`boonTab`).classList.add(`noDisplay`);
         longLap.complete = false;
         for( t in auto.skills.toggles ){ auto.skills.toggles[t] = false; }
-        profOverride();
+        if( longLap.mode == `bureaucratic` ){ profOverride( true ); }
+        else{ profOverride(); }
     } // Long Lap
     for( key in lap.prof ){
         let l = lap.prof[key].level
@@ -982,20 +982,17 @@ function buildScale(){
     }
 }
 
-function profOverride(){
+function profOverride( bureaucrat ){
     prof = {}
-    let p = 1, pm = 1, b = 7.5;
+    let p = 1, pm = 1, b = 7.5, bu = 1;
     let longProf = [];
-    for( key in namedProfessions ){ longProf.push(namedProfessions[key]); }
-    // if( longLap.mode == `bureaucratic` ){
-    //     longProf.pop();
-    //     longProf.push(`bureaucrat_rank_1`);
-    //     longProf.push(`bureaucrat_rank_2`);
-    //     longProf.push(`bureaucrat_rank_3`);
-    //     longProf.push(`bureaucrat_rank_4`);
-    //     longProf.push(`bureaucrat_rank_5`);
-    //     longProf.push(`consul`);
-    // }
+    for( key in namedProfessions ){
+        if( bureaucrat && longProf.length >= 12 && bu < 6 ){
+            longProf.push(`bureaucrat_rank_${bu}`);
+            bu++;
+        }
+        longProf.push(namedProfessions[key]);
+    }    
     for( key in longProf ){
         let n = longProf[key];
         let pro = longProf[key+1];
@@ -1124,7 +1121,7 @@ function buildDiv( type, a ){
             <div class="c25 c0">
                 <div class="bar profBar" id="${a}">
                     <div class="barFill jobFill" id="${a}Fill" style="width: 0%;"></div>
-                    <div class="barLabel">${titleCase((a.replaceAll(`_`,` `)).replaceAll(`,`,` `))}</div>
+                    <div class="barLabel">${ String( titleCase((a.replaceAll(`_`,` `) ))).replaceAll(`,`,` `)}</div>
                 </div>
             </div>
             <div class="c10">${lap.prof[a].level}</div>
@@ -1337,6 +1334,7 @@ function fixActive(){
         document.getElementById(`modesTab`).classList.remove(`noDisplay`);
         document.getElementById(`providenceMulti`).classList.remove(`noDisplay`);
     }
+    document.getElementById(`modeDisplay`).innerHTML = titleCase( longLap.mode );
 }
 
 function fixToggleDisplay( elem, e ){
@@ -1444,16 +1442,18 @@ function loadState() {
         if( state.longLap !== null && state.longLap !== undefined ){ longLap = state.longLap; }
         if( state.auto !== null && state.auto !== undefined ){ auto = state.auto; }
         if( state.version == undefined || state.version !== version ){ fixSave(); }
-        changeJob( lap.myProf );
-        changeSkill( lap.mySkill );
-        changeHome( lap.myHome );
-        updateTableValues();
+        setTimeout(() => {
+            changeJob( lap.myProf );
+            changeSkill( lap.mySkill );
+            changeHome( lap.myHome );
+            updateTableValues();    
+        }, 100 );        
     }
-    else{
-        changeJob( `beggar` );
-        changeHome( `homeless` );
-        changeSkill( `focus` );
-    }
+    // else{
+    //     changeJob( `beggar` );
+    //     changeHome( `homeless` );
+    //     changeSkill( `focus` );
+    // }
     longLap.safety = null;
     longLap.nextMode = null;
     setTimeout(() => {
@@ -1467,7 +1467,7 @@ function loadState() {
             document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[lap.mySkill].level;
         }
         ticker( global.speed );
-    }, 50);
+    }, 100);
 }
 
 function exportState(){

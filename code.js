@@ -218,6 +218,7 @@ function getXP( o, t ){
     output += lap[t][o].max / 10;
     output *= home[lap.myHome].boost;
     output *= medLap.multi;
+    output *= longLap.providence;
     if( t == `skills` ){
         output *= lap.skills.focus.boost;
         output *= lap.gods.vulcan.boost;
@@ -768,15 +769,19 @@ function endLap(){
 }
 
 function rebirth( grade ){
-    if( grade == `med` ){ watermarks = {}; } // Medium Lap
+    if( grade == `med` ){
+        watermarks = {};
+        for( t in auto.skills.toggles ){ auto.skills.toggles[t] = false; }
+    } // Medium Lap
     if( grade == `long` ){
         watermarks = {};
         medLap.multi = 1;
         for( b in medLap.boons ){ medLap.boons[b] = false; }
         document.getElementById(`boonTab`).classList.add(`noDisplay`);
         longLap.complete = false;
+        for( t in auto.skills.toggles ){ auto.skills.toggles[t] = false; }
         profOverride();
-    }
+    } // Long Lap
     for( key in lap.prof ){
         let l = lap.prof[key].level
         if( watermarks[key] < lap.prof[key].level ){ watermarks[key] = l }
@@ -805,7 +810,6 @@ function rebirth( grade ){
     document.getElementById(`retryTab`).classList.add(`noDisplay`);
     document.getElementById(`yesGods`).classList.add(`noDisplay`);
     document.getElementById(`noGods`).classList.remove(`noDisplay`);
-    for( t in auto.skills.toggles ){ auto.skills.toggles[t] = false; }
     lapAll();
     tabChange(`jobsTab`);
     essentialUI();

@@ -1,4 +1,4 @@
-var version = 0.08
+var version = 0.09
 
 var global = {
     speed: 100
@@ -368,6 +368,10 @@ var modes = {
     , bureaucratic: {
         eff: `Five additional professions added on your path to Consul.`
         , reward: 0.125
+    }
+    , pestilence: {
+        eff: `Benefits to Life Expectancy from skills, worship and housing halved.`
+        , reward: 0.175
     }
     , recession: {
         eff: `Salaries are halved and all costs are doubled.`

@@ -7,7 +7,7 @@ function onLoad(){
     buildScale();
     buildSi();
     profOverride( longLap.mode == `bureaucratic` );
-    homeOverride();
+    homeOverride( longLap.mode == `pestilence` );
     essentialUI();
     lapAll();
     createDivs();
@@ -127,19 +127,26 @@ function incrementDay(){
 function adjustAge(){
     if( lap.dead ){}
     else{
-        let l = home[lap.myHome].life * lap.skills.vitality.boost * lap.skills.athletics.boost * lap.gods.vesta.boost;
+        let m = getAgeMod();
+        let l = home[lap.myHome].life * m;
         if( medLap.boons.vesta ){ l += 5; }
         lap.lifespan = ( ( lap.lifespan * 99 + l ) / 100 );
         if( Math.abs( lap.lifespan - l ) < 0.01 ){ lap.lifespan = l; }
         document.getElementById(`lifespan`).innerHTML = niceNumber( lap.lifespan );
         for( key in home ){
-            let r = niceNumber( home[key].life * lap.skills.vitality.boost * lap.skills.athletics.boost * lap.gods.vesta.boost );
+            let r = niceNumber( home[key].life * m );
             if( medLap.boons.vesta ){
-                r = niceNumber( home[key].life * lap.skills.vitality.boost * lap.skills.athletics.boost * lap.gods.vesta.boost + 5 );
+                r = niceNumber( home[key].life * m + 5 );
             }
             document.getElementById(key+`Lifespan`).innerHTML = r;
         }
     }
+}
+
+function getAgeMod(){
+    let a = lap.skills.vitality.boost * lap.skills.athletics.boost * lap.gods.vesta.boost;
+    if( longLap.mode == `pestilence` ){ a = ( a + 1 ) / 2; }
+    return a;
 }
 
 function adjustWorship(){
@@ -779,8 +786,8 @@ function rebirth( grade ){
         document.getElementById(`boonTab`).classList.add(`noDisplay`);
         longLap.complete = false;
         for( t in auto.skills.toggles ){ auto.skills.toggles[t] = false; }
-        if( longLap.mode == `bureaucratic` ){ profOverride( true ); }
-        else{ profOverride(); }
+        profOverride( longLap.mode == `bureaucratic` );
+        homeOverride( longLap.mode == `pestilence` );
     } // Long Lap
     for( key in lap.prof ){
         let l = lap.prof[key].level
@@ -1018,7 +1025,7 @@ function profOverride( bureaucrat ){
     }
 }
 
-function homeOverride(){
+function homeOverride( pestilence ){
     home = {};
     let c = 1.25, l = 25, b = 0;
     if( medLap.boons.vesta ){ l += 5; }
@@ -1029,7 +1036,8 @@ function homeOverride(){
             , boost: scale[b]
         }
         c *= 4 + Math.max( 0, ( key - 5 ) / 2 );
-        l += 4;
+        if( pestilence ){ l += 2; }
+        else{ l += 4; }
         b++;
     }
 }
@@ -1138,7 +1146,7 @@ function buildDiv( type, a ){
                 <div class="button home" id="${a}">Move</div>
             </div>
             <div class="c15">-${niceNumber( home[a].cost )} Đ</div>
-            <div class="c15" id="${a}Lifespan">${niceNumber( (home[a].life * lap.skills.vitality.boost * lap.skills.athletics.boost * lap.gods.vesta.boost ) )}</div>
+            <div class="c15" id="${a}Lifespan">${niceNumber( (home[a].life * getAgeMod() ) )}</div>
             <div class="c35">x${niceNumber(1+(home[a].boost-1))} to all XP gain</div>
         </div>`
     }
@@ -1490,6 +1498,8 @@ function fixSave(){
     lap.myHome = `homeless`
     lap.mySkill = `focus`
     lap.gods = {}
+    profOverride( longLap.mode == `bureaucratic` );
+    homeOverride( longLap.mode == `pestilence` );
     lapAll();
     rebirth();
     ticker( 10 );

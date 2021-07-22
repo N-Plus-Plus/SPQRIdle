@@ -411,8 +411,8 @@ function automate( t ){
     else if( t == `gods` ){
         let e = getEarnings();
         let x = Math.floor( ( e.income - e.expense ) / e.income * 100 );
-        if( x < 1 ){ x == 0 }
-        lap.tribute = x;
+        if( x < 1 ){ lap.tribute = 0; }
+        else{ lap.tribute = x; }
         document.getElementById(`slider`).value = x;
     }
     else if( t == `rebirth` ){

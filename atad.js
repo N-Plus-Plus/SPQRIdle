@@ -367,15 +367,15 @@ var modes = {
     }
     , bureaucratic: {
         eff: `Five additional professions added on your path to Consul.`
-        , reward: 0.1
+        , reward: 0.125
     }
     , pestilence: {
         eff: `Benefits to Life Expectancy from skills, worship and housing halved.`
-        , reward: 0.175
+        , reward: 0.25
     }
     , recession: {
         eff: `Salaries are halved and all upkeep costs are doubled.`
-        , reward: 0.25
+        , reward: 0.375
     }
     // , degenerative: {
     //     eff: `Skills and Jobs slowly decay XP when not being actively pursued.`

@@ -988,7 +988,7 @@ function profOverride( bureaucrat ){
     let longProf = [];
     for( key in namedProfessions ){
         if( bureaucrat && longProf.length >= 12 && bu < 6 ){
-            longProf.push(`bureaucrat_rank_${bu}`);
+            longProf.push(`rank_${bu}_bureaucrat`);
             bu++;
         }
         longProf.push(namedProfessions[key]);
@@ -1450,11 +1450,11 @@ function loadState() {
             updateTableValues();    
         }, 100 );        
     }
-    // else{
-    //     changeJob( `beggar` );
-    //     changeHome( `homeless` );
-    //     changeSkill( `focus` );
-    // }
+    else{
+        changeJob( `beggar` );
+        changeHome( `homeless` );
+        changeSkill( `focus` );
+    }
     longLap.safety = null;
     longLap.nextMode = null;
     setTimeout(() => {
@@ -1468,7 +1468,7 @@ function loadState() {
             document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[lap.mySkill].level;
         }
         ticker( global.speed );
-    }, 100);
+    }, 250 );
 }
 
 function exportState(){

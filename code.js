@@ -476,7 +476,7 @@ function doBarStripes( p, x, xp, g ){
         if( x !== `gods` ){
             document.getElementById(lap[x] + 'Fill').classList.add(`stripes`);
             document.getElementById(lap[x] + 'Fill').style = s;
-            document.getElementById(x).classList.add(`stripes`);
+            document.getElementById(x).children[0].classList.add(`stripes`);
             document.getElementById(x).children[0].style = s;
         }
         else{
@@ -491,7 +491,7 @@ function doBarStripes( p, x, xp, g ){
         if( x !== `gods` ){
             document.getElementById(lap[x] + 'Fill').classList.remove(`stripes`);
             document.getElementById(lap[x] + 'Fill').style = s;
-            document.getElementById(x).classList.remove(`stripes`);
+            document.getElementById(x).children[0].classList.remove(`stripes`);
             document.getElementById(x).children[0].style = s;
         }
         else{
@@ -605,10 +605,14 @@ function changeMode( m, warning ){
 
 function worship( g ){
     lap.gods[g].active = !lap.gods[g].active;
-    if( lap.gods[g].active ){ document.getElementById(g+`Fill`).classList.add(`active`); }
+    if( lap.gods[g].active ){ 
+        document.getElementById(g+`Fill`).classList.add(`active`);
+        document.getElementById(g+`Fill`).parentElement.children[1].children[0].classList.remove(`darken`);
+    }
     else{
         document.getElementById(g+`Fill`).classList.remove(`active`);
         document.getElementById(g+`Fill`).classList.remove(`stripes`);
+        document.getElementById(g+`Fill`).parentElement.children[1].children[0].classList.add(`darken`);
     }
     adjustWorship();
     updateAllXP();
@@ -1303,8 +1307,14 @@ function appendCostPreviews(){
 
 function fixActive(){
     for( g in lap.gods ){
-        if( lap.gods[g].active ){ document.getElementById(g+`Fill`).classList.add(`active`); }
-        else{ document.getElementById(g+`Fill`).classList.remove(`active`); }
+        if( lap.gods[g].active ){
+            document.getElementById(g+`Fill`).classList.add(`active`);
+            document.getElementById(g+`Fill`).parentElement.children[1].children[0].classList.remove(`darken`);
+        }
+        else{
+            document.getElementById(g+`Fill`).classList.remove(`active`);
+            document.getElementById(g+`Fill`).parentElement.children[1].children[0].classList.add(`darken`);
+        }
     }
     document.getElementById(`slider`).value = lap.tribute;
     for( i in lap.items ){

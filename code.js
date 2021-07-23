@@ -1450,25 +1450,23 @@ function loadState() {
             updateTableValues();    
         }, 100 );        
     }
-    else{
-        changeJob( `beggar` );
-        changeHome( `homeless` );
-        changeSkill( `focus` );
-    }
     longLap.safety = null;
     longLap.nextMode = null;
     setTimeout(() => {
         if( lap.dead ){ rebirth(); }
         else{
             unlock( `beggar` );
+            changeJob( `beggar` );
             unlock( `focus` );
+            changeSkill( `focus` );
             unlock( `homeless` );
+            changeHome( `homeless` );
             testUpgradeCosts();
             document.getElementById(`myProf`).children[2].innerHTML = lap.prof[lap.myProf].level;
             document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[lap.mySkill].level;
         }
         ticker( global.speed );
-    }, 250 );
+    }, 100 );
 }
 
 function exportState(){

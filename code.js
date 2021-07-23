@@ -546,7 +546,7 @@ function changeJob( job ){
     if( lap.dead ){}
     else if( lap.myProf == job ){
         document.getElementById( lap.myProf ).children[0].classList.add(`active`);
-        document.getElementById(`myProf`).children[1].innerHTML = String( titleCase((job.replaceAll(`_`,` `) ))).replaceAll(`,`,` `);
+        document.getElementById(`myProf`).children[1].innerHTML = nicify( job );
     }
     else{
         if( lap.myProf !== `` ){
@@ -555,7 +555,7 @@ function changeJob( job ){
         }
         lap.myProf = job;
         document.getElementById( lap.myProf ).children[0].classList.add(`active`);
-        document.getElementById(`myProf`).children[1].innerHTML = String( titleCase((job.replaceAll(`_`,` `) ))).replaceAll(`,`,` `);
+        document.getElementById(`myProf`).children[1].innerHTML = nicify( job );
         document.getElementById(`myProf`).children[2].innerHTML = lap.prof[job].level;
         document.getElementById(`myProf`).children[0].style = `
         width:${lap.prof[job].xp / lap.prof[job].next * 100}%;
@@ -725,7 +725,7 @@ function checkUnlocks(){
         if( lap.prof[key].unlocked ){}
         else{
             let i = prof[key].req.prof[0].type;
-            h = `Profession: ${titleCase(i)} ${lap.prof[i].level} / 10.`;
+            h = `Profession: ${nicify(i)} ${lap.prof[i].level} / 10.`;
             break;
         }
     }
@@ -739,7 +739,7 @@ function checkUnlocks(){
         else if( type == i && type !== `focus` ){ elem.classList.add(`noDisplay`); }
         else if( !lap.skills[i].unlocked ){ elem.classList.add(`noDisplay`); }
         else{
-            elem.children[0].innerHTML = `<div class="space"></div>Skill: ${titleCase(i)} ${lap.skills[i].level} / ${skills[key].req.skills[0].level}.`;
+            elem.children[0].innerHTML = `<div class="space"></div>Skill: ${nicify(i)} ${lap.skills[i].level} / ${skills[key].req.skills[0].level}.`;
             elem.classList.remove(`noDisplay`);
             type = i;
         }
@@ -1431,6 +1431,10 @@ function titleCase(string) {
     };
     return sentence;
 };
+
+function nicify( x ){
+    return String( titleCase((x.replaceAll(`_`,` `) ))).replaceAll(`,`,` `);
+}
 
 function tabChange( target ){
     let s = target.replace(`Tab`,``);

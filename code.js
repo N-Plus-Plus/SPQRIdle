@@ -269,8 +269,8 @@ function getXP( o, t ){
 }
 
 function tickSpeed(){
-    let output = global.speed / lap.speed / lap.skills.swiftness.boost / lap.gods.mercury.boost;
-    if( medLap.boons.mercury ){ output /= 1.2; }
+    let output = global.speed / lap.speed * lap.skills.swiftness.boost * lap.gods.mercury.boost;
+    if( medLap.boons.mercury ){ output *= 0.75; }
     return output;
 }
 
@@ -1564,8 +1564,8 @@ function round(value, exp) {
 }
 
 function generateBackground(){
+    document.querySelector(`.bgBox`).innerHTML = ``;
     let dest = document.querySelector(`.bgBox`);
-    dest.innerHTML = ``;
     let w = Math.ceil( dest.getBoundingClientRect().right / 16 );
     let h = Math.ceil( dest.getBoundingClientRect().bottom / 16 );
     let d = w * h;

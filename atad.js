@@ -79,7 +79,7 @@ var boons = {
     , apollo: `Agi and Cha get x2 boost from Focus`
     , minerva: `Int and Wis get x2 boost from Focus`
     , diana: `Item Upgrade costs scale exponent reduced by 25%`
-    , mercury: `x1.2 game speed increase`
+    , mercury: `x0.75 game speed increase`
     , vesta: `+5 years of life expectancy`
 }
 
@@ -170,7 +170,7 @@ var skills = {
         req: { skills: [ { type: `agility`, level: 25 } ] }
         , eff: `xQ Game speed`
         , base: 500
-        , type: `logarithm`
+        , type: `decrement`
     }
     //
     , endurance: {
@@ -307,7 +307,7 @@ var gods = {
     }
     , mercury: {
         eff: `xQ Game speed`
-        , type: `logarithm`
+        , type: `decrement`
         , base: global.worshipBase
     }
     , vesta: {

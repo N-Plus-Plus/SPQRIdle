@@ -16,7 +16,7 @@ function onLoad(){
     updateWatermarks();
     setTimeout(() => {
         updateGlobalIncome();
-    }, 250 );
+    }, 20 );
 }
 
 function createDivs(){
@@ -316,8 +316,8 @@ function xpUp(){
 
 function levelUp( r, z, par ){
     lap[r][z].level++;
-    par.children[1].innerHTML = niceNumber(lap[r][z].level);
     lap[r][z].xp = 0;
+    par.children[1].innerHTML = niceNumber(lap[r][z].level);
     lap[r][z].next = deduceLevelXP( r, z, lap[r][z].level );
     if( r !== `prof` ){
         let type = window[r][z].type;
@@ -353,9 +353,30 @@ function levelUpMany( r, z, par ){
         else if( i > 100 ){ stop = true; }
         else{
             x -= deduceLevelXP( r, z, lap[r][z].level + i )
-            levelUp( r, z, par );
+            //levelUp( r, z, par );
+            lap[r][z].level++;        
         }
         i++;
+    }    
+    lap[r][z].xp = 0;
+    lap[r][z].next = deduceLevelXP( r, z, lap[r][z].level );
+    if( r == `prof` ){ 
+        document.getElementById(`myProf`).children[2].innerHTML = lap[r][z].level;
+        par.children[2].innerHTML = `+${niceNumber( getEarnings( lap.myProf ).income )} Đ`;
+    }
+    else if( r == `skills` ){ 
+        document.getElementById(`mySkill`).children[2].innerHTML = lap[r][z].level;
+    }
+    else if( r == `gods` ){
+        if( lap[r][z].level >= 100 && !medLap.boons[z] ){ offerBoon( z ); }
+    }
+    updateAllXP();
+    updateGlobalIncome();
+    updateTableValues();
+    checkUnlocks();
+    if( auto[r].automate ){
+        automate( r );
+        updateTableValues();
     }
 }
 
@@ -1458,7 +1479,7 @@ function loadState() {
             changeSkill( lap.mySkill );
             changeHome( lap.myHome );
             updateTableValues();    
-        }, 100 );        
+        }, 10 );        
     }
     longLap.safety = null;
     longLap.nextMode = null;
@@ -1476,7 +1497,7 @@ function loadState() {
             document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[lap.mySkill].level;
         }
         ticker( global.speed );
-    }, 100 );
+    }, 10 );
 }
 
 function exportState(){
@@ -1507,7 +1528,7 @@ function fixSave(){
     saveState();    
     setTimeout(() => {
         location.reload();        
-    }, 100);
+    }, 10);
 }
 
 function hardReset(){

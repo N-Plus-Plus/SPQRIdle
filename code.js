@@ -1479,7 +1479,12 @@ function loadState() {
             changeSkill( lap.mySkill );
             changeHome( lap.myHome );
             updateTableValues();    
-        }, 10 );        
+        }, 50 );   
+    }
+    else{        
+        changeJob( `beggar` );
+        changeSkill( `focus` );
+        changeHome( `homeless` );
     }
     longLap.safety = null;
     longLap.nextMode = null;
@@ -1487,17 +1492,14 @@ function loadState() {
         if( lap.dead ){ rebirth(); }
         else{
             unlock( `beggar` );
-            changeJob( `beggar` );
             unlock( `focus` );
-            changeSkill( `focus` );
             unlock( `homeless` );
-            changeHome( `homeless` );
             testUpgradeCosts();
             document.getElementById(`myProf`).children[2].innerHTML = lap.prof[lap.myProf].level;
             document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[lap.mySkill].level;
         }
         ticker( global.speed );
-    }, 10 );
+    }, 35 );
 }
 
 function exportState(){

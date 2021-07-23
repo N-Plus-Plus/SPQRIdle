@@ -1,6 +1,7 @@
 document.addEventListener(`DOMContentLoaded`, function () { onLoad(); } );
 window.addEventListener(`mousedown`, function (e) { clicked( e.target, false ) } );
 window.addEventListener(`change`, function (e) { changed( e.target ) } );
+window.addEventListener(`resize`, generateBackground() );
 
 function onLoad(){
     loadState();
@@ -16,6 +17,7 @@ function onLoad(){
     updateWatermarks();
     setTimeout(() => {
         updateGlobalIncome();
+        generateBackground();
     }, 20 );
 }
 
@@ -321,7 +323,7 @@ function levelUp( r, z, par ){
     lap[r][z].next = deduceLevelXP( r, z, lap[r][z].level );
     if( r !== `prof` ){
         let type = window[r][z].type;
-        if( type == `increment` ){ lap[r][z].boost += global.inc * ( r == `gods` ? 5 : 1 ); }
+        if( type == `increment` ){ lap[r][z].boost = 1 + ( global.inc * ( r == `gods` ? 5 : 1 ) ) * lap[r][z].level; }
         else if( type == `logarithm` ){ lap[r][z].boost = Math.log10( 10 + lap[r][z].level / ( 50 / ( r == `gods` ? 5 : 1 ) ) ); }
         else if( type == `decrement` ){ lap[r][z].boost = Math.max( 0.1, 1 / ( Math.log10( 10 + lap[r][z].level / ( 25 / ( r == `gods` ? 5 : 1 ) ) ) ) ); }
     }
@@ -358,7 +360,7 @@ function levelUpMany( r, z, par ){
         }
         i++;
     }    
-    lap[r][z].xp = 0;
+    lap[r][z].xp = x;
     lap[r][z].next = deduceLevelXP( r, z, lap[r][z].level );
     if( r == `prof` ){ 
         document.getElementById(`myProf`).children[2].innerHTML = lap[r][z].level;
@@ -1555,4 +1557,18 @@ function round(value, exp) {
     // Shift back
     value = value.toString().split('e');
     return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
+}
+
+function generateBackground(){
+    let dest = document.querySelector(`.bgBox`);
+    dest.innerHTML = ``;
+    let w = Math.ceil( dest.getBoundingClientRect().right / 16 );
+    let h = Math.ceil( dest.getBoundingClientRect().bottom / 16 );
+    let d = w * h;
+    for( let i = 0; i < d; i++ ){
+        let x = document.createElement(`div`);
+        x.classList = `bgDoot`;
+        x.style.opacity = Math.random();
+        dest.appendChild(x);
+    }
 }

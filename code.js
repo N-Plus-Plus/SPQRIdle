@@ -16,8 +16,6 @@ function onLoad(){
     updateWatermarks();
     setTimeout(() => {
         updateGlobalIncome();
-        generateBackground();        
-        window.addEventListener(`resize`, generateBackground() );
     }, 20 );
 }
 
@@ -45,7 +43,6 @@ function ticker( dur ){
         }
         lap.ticks++;
         if( lap.ticks % 10 == 0 ){
-            if( auto.rebirth.automate ){ automate( `rebirth` ); }
             countdown();
             saveState();
         }
@@ -121,8 +118,9 @@ function incrementDay(){
                 longLap.complete = true;
             }
         }
-        updateGlobalIncome();
         checkUnlocks();
+        updateGlobalIncome();
+        automate(`all`);
     }
 }
 
@@ -341,7 +339,6 @@ function levelUp( r, z, par ){
         if( medLap.boons.mercury ){ x *= 0.75; }
         changeSpeed( x );
     }
-    if( auto[r].automate ){ automate( r ); }
 }
 
 function levelUpMany( r, z, par ){
@@ -353,7 +350,6 @@ function levelUpMany( r, z, par ){
         else if( i > 100 ){ stop = true; }
         else{
             x -= deduceLevelXP( r, z, lap[r][z].level + i )
-            //levelUp( r, z, par );
             lap[r][z].level++;        
         }
         i++;
@@ -370,7 +366,6 @@ function levelUpMany( r, z, par ){
     else if( r == `gods` ){
         if( lap[r][z].level >= 100 && !medLap.boons[z] ){ offerBoon( z ); }
     }
-    if( auto[r].automate ){ automate( r ); }
 }
 
 function deduceLevelXP( r, z, b ){
@@ -384,15 +379,15 @@ function deduceLevelXP( r, z, b ){
     return next;
 }
 
-function automate( t ){
-    if( t == `prof` ){
+function automate(){
+    if( auto.prof.automate ){
         let j = ``;
         for( key in lap.prof ){
             if( lap.prof[key].unlocked ){ j = key; }
         }
         changeJob( j );
     }
-    else if( t == `skills` ){
+    if( auto.skills.automate ){
         let s = ``, i = 1e300;
         for( key in lap.skills ){
             if( lap.skills[key].unlocked ){ 
@@ -404,9 +399,9 @@ function automate( t ){
                 }
             }
         }
-        if( s !== `` ){ changeSkill( s ) };
+        if( s !== `` && lap.skills[lap.mySkill].xp == 0 ){ changeSkill( s ) };
     }
-    else if( t == `homes` ){
+    if( auto.homes.automate ){
         let h = ``;
         for( x in lap.homes ){
             if( lap.homes[x].unlocked ){
@@ -417,19 +412,19 @@ function automate( t ){
         }
         if( h !== `` ){ changeHome( h ); }
     }
-    else if( t == `items` ){
+    if( auto.items.automate ){
         for( ii in lap.items ){
             if( lap.wealth > getUpgradeCost( ii ) && lap.items[ii].active ){ upgradeItem( ii ); }
         }
     }
-    else if( t == `gods` ){
+    if( auto.gods.automate ){
         let e = getEarnings();
         let x = Math.floor( ( e.income - e.expense ) / e.income * 100 );
         if( x < 1 ){ lap.tribute = 0; }
         else{ lap.tribute = x; }
         document.getElementById(`slider`).value = x;
     }
-    else if( t == `rebirth` ){
+    if( auto.rebirth.automate ){
         if( lap.dead ){ rebirth(); }
     }
 }
@@ -465,10 +460,7 @@ function updateGlobalIncome(){
     document.getElementById(`income`).innerHTML = niceNumber( e.income );
     document.getElementById(`expense`).innerHTML = niceNumber( e.expense );
     document.getElementById(`tithings`).innerHTML = niceNumber( e.tribute );
-    document.getElementById(`tribute`).innerHTML = `${lap.tribute}% (-${niceNumber( getEarnings().tribute)} Đ)`;    
-    if( auto.homes.automate ){ automate( `homes` ); }
-    if( auto.items.automate ){ automate( `items` ); }
-    if( auto.gods.automate ){ automate( `gods` ); }
+    document.getElementById(`tribute`).innerHTML = `${lap.tribute}% (-${niceNumber( getEarnings().tribute)} Đ)`;
 }
 
 function updateBars(){
@@ -483,8 +475,12 @@ function updateBars(){
     }
 }
 
+function fixBar( x, y ){
+    document.getElementById(`${x}Fill`).style = ui.regStyle.replace(`Q`,y);
+    console.log( x )
+}
+
 function doBarStripes( p, x, xp, g ){
-    //let s = `width:${p.xp / p.next * 100}%; transition:all linear ${tickSpeed()}ms;`;
     let n = p.xp / p.next * 100;
     let s = ui.regStyle.replace(`Q`,n);
     if( xp >= p.next / 3 && p.level > 1 ){
@@ -535,6 +531,7 @@ function updateAllXP(){
 }
 
 function changeJob( job ){
+    let old = JSON.parse( JSON.stringify( lap.myProf ) );
     if( lap.dead ){}
     else if( lap.myProf == job ){
         document.getElementById( lap.myProf ).children[0].classList.add(`active`);
@@ -551,11 +548,9 @@ function changeJob( job ){
         document.getElementById(`myProf`).children[2].innerHTML = lap.prof[job].level;
         let x = lap.prof[job].xp / lap.prof[job].next * 100;
         document.getElementById(`myProf`).children[0].style = ui.regStyle.replace(`Q`,x);
-        // document.getElementById(`myProf`).children[0].style = `
-        // width:${lap.prof[job].xp / lap.prof[job].next * 100}%;
-        // transition:all linear ${tickSpeed()}ms;`;
         if( job == `consul` ){ lap.isConsul = true; }
         else{ lap.isConsul = false; consulDays = 0; }
+        fixBar( old, lap.prof[old].xp / lap.prof[old].next * 100 );
     }
 }
 
@@ -578,6 +573,7 @@ function changeHome( h ){
 
 function changeSkill( s ){
     if( !lap.dead ){
+        let old = JSON.parse( JSON.stringify( lap.mySkill ) );
         if( lap.mySkill !== s ){
             let b = document.getElementById( lap.mySkill + `Fill` )
             b.classList.remove(`active`);
@@ -586,7 +582,8 @@ function changeSkill( s ){
         }
         document.getElementById(`mySkill`).children[1].innerHTML = titleCase( s );
         document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[s].level;
-        document.getElementById( lap.mySkill + `Fill` ).classList.add(`active`);
+        document.getElementById( lap.mySkill + `Fill` ).classList.add(`active`);        
+        fixBar( old, lap.skills[old].xp / lap.skills[old].next * 100 );
     }
 }
 
@@ -1545,18 +1542,4 @@ function round(value, exp) {
     // Shift back
     value = value.toString().split('e');
     return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
-}
-
-function generateBackground(){
-    // document.querySelector(`.bgBox`).innerHTML = ``;
-    // let dest = document.querySelector(`.bgBox`);
-    // let w = Math.ceil( dest.getBoundingClientRect().right / 16 );
-    // let h = Math.ceil( dest.getBoundingClientRect().bottom / 16 );
-    // let d = w * h;
-    // for( let i = 0; i < d; i++ ){
-    //     let x = document.createElement(`div`);
-    //     x.classList = `bgDoot`;
-    //     x.style.opacity = Math.random();
-    //     dest.appendChild(x);
-    // }
 }

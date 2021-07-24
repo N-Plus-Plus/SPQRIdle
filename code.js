@@ -1548,15 +1548,15 @@ function round(value, exp) {
 }
 
 function generateBackground(){
-    document.querySelector(`.bgBox`).innerHTML = ``;
-    let dest = document.querySelector(`.bgBox`);
-    let w = Math.ceil( dest.getBoundingClientRect().right / 16 );
-    let h = Math.ceil( dest.getBoundingClientRect().bottom / 16 );
-    let d = w * h;
-    for( let i = 0; i < d; i++ ){
-        let x = document.createElement(`div`);
-        x.classList = `bgDoot`;
-        x.style.opacity = Math.random();
-        dest.appendChild(x);
-    }
+    // document.querySelector(`.bgBox`).innerHTML = ``;
+    // let dest = document.querySelector(`.bgBox`);
+    // let w = Math.ceil( dest.getBoundingClientRect().right / 16 );
+    // let h = Math.ceil( dest.getBoundingClientRect().bottom / 16 );
+    // let d = w * h;
+    // for( let i = 0; i < d; i++ ){
+    //     let x = document.createElement(`div`);
+    //     x.classList = `bgDoot`;
+    //     x.style.opacity = Math.random();
+    //     dest.appendChild(x);
+    // }
 }

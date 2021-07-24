@@ -22,6 +22,7 @@ var lap = {
     ticks: 0
     , day: 0
     , speed: 1
+    , tickSpeed: 100
     , lifespan: 25
     , worshipping: 0
     , tribute: 0
@@ -66,6 +67,11 @@ var longLap = {
     , curses: []
     , unlocked: false
     , complete: false
+}
+
+var ui = {
+    stripeStyle: `width:100%; transition:none;`
+    , regStyle: `width:Q%; transition:all linear Vms;`
 }
 
 var boons = {

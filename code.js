@@ -269,7 +269,7 @@ function getXP( o, t ){
 }
 
 function tickSpeed(){
-    let output = global.speed / lap.speed * lap.skills.swiftness.boost * lap.gods.mercury.boost;
+    let output = ( global.speed / lap.speed * lap.skills.swiftness.boost ) * lap.gods.mercury.boost;
     if( medLap.boons.mercury ){ output *= 0.75; }
     return output;
 }

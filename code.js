@@ -120,7 +120,7 @@ function incrementDay(){
         }
         checkUnlocks();
         updateGlobalIncome();
-        automate(`all`);
+        automate();
     }
 }
 
@@ -284,7 +284,7 @@ function xpUp(){
     lap.prof[j].xp += getXP( j, `prof` );
     pj.children[4].innerHTML = niceNumber( Math.ceil( Math.max( 0, lap.prof[j].next - lap.prof[j].xp ) ) );
     if( lap.prof[j].xp >= lap.prof[j].next ){
-        if( lap.prof[j].xp < lap.prof[j].next + deduceLevelXP( `prof`, j, lap.prof[j].level + 1 ) * 2 ){ 
+        if( lap.prof[j].xp - lap.prof[j].next < deduceLevelXP( `prof`, j, lap.prof[j].level + 1 ) ){ 
             levelUp( `prof`, j, pj ); }
         else{ levelUpMany( `prof`, j, pj ); }
     }
@@ -294,7 +294,7 @@ function xpUp(){
     lap.skills[s].xp += getXP( s, `skills` );
     ps.children[4].innerHTML = niceNumber( Math.ceil( Math.max( 0, lap.skills[s].next - lap.skills[s].xp ) ) );
     if( lap.skills[s].xp >= lap.skills[s].next ){ 
-        if( lap.skills[s].xp < lap.skills[s].next + deduceLevelXP( `skills`, s, lap.skills[s].level + 1 ) * 2 ){ 
+        if( lap.skills[s].xp - lap.skills[s].next < deduceLevelXP( `skills`, s, lap.skills[s].level + 1 ) ){ 
             levelUp( `skills`, s, ps ); }
         else{ levelUpMany( `skills`, s, ps ); }
     }
@@ -305,17 +305,17 @@ function xpUp(){
             lap.gods[g].xp += getXP( g, `gods` );
             pd.children[4].innerHTML = niceNumber( Math.ceil( Math.max( 0, lap.gods[g].next - lap.gods[g].xp ) ) );
             if( lap.gods[g].xp >= lap.gods[g].next ){ 
-                if( lap.gods[g].xp < lap.gods[g].next + deduceLevelXP( `gods`, g, lap.gods[g].level + 1 ) * 2 ){ 
+                if( lap.gods[g].xp - lap.gods[g].next < deduceLevelXP( `gods`, g, lap.gods[g].level + 1 ) ){ 
                     levelUp( `gods`, g, pd ); }             
                 else{ levelUpMany( `gods`, g, pd ); }
             }
-        }        
+        }
     }   
 }
 
 function levelUp( r, z, par ){
     lap[r][z].level++;
-    lap[r][z].xp = 0;
+    lap[r][z].xp -= lap[r][z].next;
     par.children[1].innerHTML = niceNumber(lap[r][z].level);
     lap[r][z].next = deduceLevelXP( r, z, lap[r][z].level );
     if( r !== `prof` ){
@@ -339,6 +339,7 @@ function levelUp( r, z, par ){
         if( medLap.boons.mercury ){ x *= 0.75; }
         changeSpeed( x );
     }
+    if( lap[r][z].xp > lap[r][z].next ){ lap[r][z].xp = lap[r][z].next; }
 }
 
 function levelUpMany( r, z, par ){
@@ -399,7 +400,8 @@ function automate(){
                 }
             }
         }
-        if( s !== `` && lap.skills[lap.mySkill].xp == 0 ){ changeSkill( s ) };
+        if( s !== `` && s !== lap.mySkill){ changeSkill( s ) };
+        // if( s !== `` && lap.skills[lap.mySkill].xp == 0 ){ changeSkill( s ) };
     }
     if( auto.homes.automate ){
         let h = ``;
@@ -411,6 +413,7 @@ function automate(){
             }
         }
         if( h !== `` ){ changeHome( h ); }
+        else{ changeHome( `homeless` ); }
     }
     if( auto.items.automate ){
         for( ii in lap.items ){
@@ -464,11 +467,42 @@ function updateGlobalIncome(){
 }
 
 function updateBars(){
-    doBarStripes( lap.prof[lap.myProf], `myProf`, getXP( lap.myProf, `prof` ) );
-    doBarStripes( lap.skills[lap.mySkill], `mySkill`, getXP( lap.mySkill, `skills` ) );
-    for( key in lap.gods ){
+    if( document.getElementById(`jobsTab`).classList.contains(`active`) ){
+        doBarStripes( lap.prof[lap.myProf], `myProf`, getXP( lap.myProf, `prof` ) );
+    }
+    else if( document.getElementById(`skillsTab`).classList.contains(`active`) ){
+        doBarStripes( lap.skills[lap.mySkill], `mySkill`, getXP( lap.mySkill, `skills` ) );
+    }
+    else if( document.getElementById(`divineTab`).classList.contains(`active`) ){
+        for( key in lap.gods ){
+            let p = lap.gods[key];
+            doBarStripes( p, `gods`, getXP( key, `gods` ), key );            
+        }
+    }
+    let n = Math.min( 100, lap.prof[lap.myProf].xp / lap.prof[lap.myProf].next * 100 );
+    let s = ui.regStyle.replace(`Q`,n);
+    let d = document.getElementById(`myProf`).children[0];
+    if( n > 100 ){
+        d.classList.add(`stripes`);
+        d.style = ui.stripeStyle;
+    }
+    else{
+        d.classList.remove(`stripes`);
+        d.style = s;
+    }
+    n = Math.min( 100, lap.skills[lap.mySkill].xp / lap.skills[lap.mySkill].next * 100 );
+    s = ui.regStyle.replace(`Q`,n);
+    d = document.getElementById(`mySkill`).children[0];
+    if( n > 100 ){
+        d.classList.add(`stripes`);
+        d.style = ui.stripeStyle;
+    }
+    else{
+        d.classList.remove(`stripes`);
+        d.style = s;
+    }
+    for( key in lap.gods ){        
         let p = lap.gods[key];
-        doBarStripes( p, `gods`, getXP( key, `gods` ), key )
         updateRing( `#${key}Ring`, p.xp / p.next );
         if( lap.gods[key].active ){ document.getElementById(`${key}Ring`).classList.add(`godOn`) }
         else{ document.getElementById(`${key}Ring`).classList.remove(`godOn`) }
@@ -476,34 +510,34 @@ function updateBars(){
 }
 
 function fixBar( x, y ){
-    document.getElementById(`${x}Fill`).style = ui.regStyle.replace(`Q`,y);
-    console.log( x )
+    // work out if it should have stripes ...
+    //document.getElementById(`${x}Fill`).classList.add(`active`);
+    setTimeout(() => {
+        document.getElementById(`${x}Fill`).style = `width: ${y}%; transition: none;`;
+        //document.getElementById(`${x}Fill`).classList.remove(`active`);
+    }, lap.tickSpeed / 2 );
 }
 
 function doBarStripes( p, x, xp, g ){
-    let n = p.xp / p.next * 100;
+    let n = Math.min( p.xp / p.next * 100, 100 );
     let s = ui.regStyle.replace(`Q`,n);
-    if( xp >= p.next / 3 && p.level > 1 ){
+    if( xp >= p.next ){
         s = ui.stripeStyle;
         if( x !== `gods` ){
             document.getElementById(lap[x] + 'Fill').classList.add(`stripes`);
-            document.getElementById(lap[x] + 'Fill').style = s;
-            document.getElementById(x).children[0].classList.add(`stripes`);
-            document.getElementById(x).children[0].style = s;
+            document.getElementById(lap[x] + 'Fill').style = ui.stripeStyle;
         }
         else{
             if( lap.gods[g].active ){
                 document.getElementById(g + `Fill`).classList.add(`stripes`);
             }
-            document.getElementById(g + `Fill`).style = s;
+            document.getElementById(g + `Fill`).style = ui.stripeStyle;
         }
     }
     else{
         if( x !== `gods` ){
             document.getElementById(lap[x] + 'Fill').classList.remove(`stripes`);
             document.getElementById(lap[x] + 'Fill').style = s;
-            document.getElementById(x).children[0].classList.remove(`stripes`);
-            document.getElementById(x).children[0].style = s;
         }
         else{
             document.getElementById(g + `Fill`).classList.remove(`stripes`);
@@ -513,20 +547,26 @@ function doBarStripes( p, x, xp, g ){
 }
 
 function updateAllXP(){
-    for( key in lap.prof ){
-        let x = niceNumber( getXP( key, `prof` ) );
-        if( document.getElementById(`${key}XP`) == null ){}
-        else{ document.getElementById(`${key}XP`).innerHTML = x; }
+    if( document.getElementById(`jobsTab`).classList.contains(`active`) ){
+        for( key in lap.prof ){
+            let x = niceNumber( getXP( key, `prof` ) );
+            if( document.getElementById(`${key}XP`) == null ){}
+            else{ document.getElementById(`${key}XP`).innerHTML = x; }
+        }
     }
-    for( key in lap.skills ){
-        let x = niceNumber( getXP( key, `skills` ) );
-        document.getElementById(`${key}XP`).innerHTML = x;
-        document.getElementById(`${key}Boost`).innerHTML = skills[key].eff.replace(`Q`, niceNumber( lap.skills[key].boost ) );
+    else if( document.getElementById(`skillsTab`).classList.contains(`active`) ){
+        for( key in lap.skills ){
+            let x = niceNumber( getXP( key, `skills` ) );
+            document.getElementById(`${key}XP`).innerHTML = x;
+            document.getElementById(`${key}Boost`).innerHTML = skills[key].eff.replace(`Q`, niceNumber( lap.skills[key].boost ) );
+        }
     }
-    for( key in lap.gods ){
-        let x = niceNumber( getXP( key, `gods` ) );
-        document.getElementById(`${key}XP`).innerHTML = x;
-        document.getElementById(`${key}Boost`).innerHTML = gods[key].eff.replace(`Q`, niceNumber( lap.gods[key].boost ) );
+    else if( document.getElementById(`divineTab`).classList.contains(`active`) ){
+        for( key in lap.gods ){
+            let x = niceNumber( getXP( key, `gods` ) );
+            document.getElementById(`${key}XP`).innerHTML = x;
+            document.getElementById(`${key}Boost`).innerHTML = gods[key].eff.replace(`Q`, niceNumber( lap.gods[key].boost ) );
+        }
     }
 }
 
@@ -550,7 +590,7 @@ function changeJob( job ){
         document.getElementById(`myProf`).children[0].style = ui.regStyle.replace(`Q`,x);
         if( job == `consul` ){ lap.isConsul = true; }
         else{ lap.isConsul = false; consulDays = 0; }
-        fixBar( old, lap.prof[old].xp / lap.prof[old].next * 100 );
+        fixBar( old, Math.min( 100, lap.prof[old].xp / lap.prof[old].next * 100 ) );
     }
 }
 
@@ -579,11 +619,17 @@ function changeSkill( s ){
             b.classList.remove(`active`);
             b.classList.remove(`stripes`);
             lap.mySkill = s;
+            b.style = `width: ${Math.min( 100, lap.skills[s].xp / lap.skills[s].next * 100 )}%;`
         }
         document.getElementById(`mySkill`).children[1].innerHTML = titleCase( s );
         document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[s].level;
         document.getElementById( lap.mySkill + `Fill` ).classList.add(`active`);        
-        fixBar( old, lap.skills[old].xp / lap.skills[old].next * 100 );
+        if( lap.mySkill !== old ){
+            if( lap.skills[old].xp > lap.skills[old].next ){ 
+                let ps = document.getElementById( lap.mySkill ).parentElement.parentElement;
+                levelUp( `skills`, old, ps ); }
+            fixBar( old, Math.min( 100, lap.skills[old].xp / lap.skills[old].next * 100 ) );
+        }
     }
 }
 
@@ -785,6 +831,7 @@ function rebirth( grade ){
     if( grade == `med` ){
         watermarks = {};
         for( t in auto.skills.toggles ){ auto.skills.toggles[t] = false; }
+        for( a in auto ){ auto[a].automate = false; }
     } // Medium Lap
     if( grade == `long` ){
         watermarks = {};
@@ -917,43 +964,53 @@ function lapAll(){
 }
 
 function updateTableValues(){
-    for( keyP in lap.prof ){
-        let p = lap.prof[keyP];
-        let par = document.getElementById(keyP).parentElement.parentElement;
-        par.children[1].innerHTML = niceNumber( p.level );
-        par.children[2].innerHTML = `+${niceNumber( getEarnings( keyP ).income )} Đ`;
-        par.children[3].innerHTML = niceNumber( getXP( keyP, `prof` ) );
-        par.children[4].innerHTML = niceNumber( Math.ceil( p.next - p.xp ) );
-        par.children[5].innerHTML = niceNumber( p.max );
+    if( document.getElementById(`jobsTab`).classList.contains(`active`) ){
+        for( keyP in lap.prof ){
+            let p = lap.prof[keyP];
+            let par = document.getElementById(keyP).parentElement.parentElement;
+            par.children[1].innerHTML = niceNumber( p.level );
+            par.children[2].innerHTML = `+${niceNumber( getEarnings( keyP ).income )} Đ`;
+            par.children[3].innerHTML = niceNumber( getXP( keyP, `prof` ) );
+            par.children[4].innerHTML = niceNumber( Math.ceil( p.next - p.xp ) );
+            par.children[5].innerHTML = niceNumber( p.max );
+        }
     }
-    for( keyL in lap.skills ){
-        let s = lap.skills[keyL];
-        let par = document.getElementById(keyL).parentElement.parentElement;
-        par.children[1].innerHTML = niceNumber( s.level );
-        par.children[2].innerHTML = skills[keyL].eff.replace(`Q`, niceNumber( s.boost ));
-        par.children[3].innerHTML = niceNumber( getXP( keyL, `skills` ) );
-        par.children[4].innerHTML = niceNumber( Math.ceil( s.next - s.xp ) );
-        par.children[5].innerHTML = niceNumber( s.max );
+    else if( document.getElementById(`skillsTab`).classList.contains(`active`) ){
+        for( keyL in lap.skills ){
+            let s = lap.skills[keyL];
+            let par = document.getElementById(keyL).parentElement.parentElement;
+            par.children[1].innerHTML = niceNumber( s.level );
+            par.children[2].innerHTML = skills[keyL].eff.replace(`Q`, niceNumber( s.boost ));
+            par.children[3].innerHTML = niceNumber( getXP( keyL, `skills` ) );
+            par.children[4].innerHTML = niceNumber( Math.ceil( s.next - s.xp ) );
+            par.children[5].innerHTML = niceNumber( s.max );
+        }
     }
-    for( keyD in lap.gods ){
-        let g = lap.gods[keyD];
-        let par = document.getElementById(keyD).parentElement.parentElement;
-        par.children[1].innerHTML = niceNumber( g.level );
-        par.children[2].innerHTML = gods[keyD].eff.replace(`Q`, niceNumber( g.boost ));
-        par.children[3].innerHTML = niceNumber( getXP( keyD, `gods` ) );
-        par.children[4].innerHTML = niceNumber( Math.ceil( g.next - g.xp ) );
-        par.children[5].innerHTML = niceNumber( g.max );
+    else if( document.getElementById(`divineTab`).classList.contains(`active`) ){
+        for( keyD in lap.gods ){
+            let g = lap.gods[keyD];
+            let par = document.getElementById(keyD).parentElement.parentElement;
+            par.children[1].innerHTML = niceNumber( g.level );
+            par.children[2].innerHTML = gods[keyD].eff.replace(`Q`, niceNumber( g.boost ));
+            par.children[3].innerHTML = niceNumber( getXP( keyD, `gods` ) );
+            par.children[4].innerHTML = niceNumber( Math.ceil( g.next - g.xp ) );
+            par.children[5].innerHTML = niceNumber( g.max );
+        }
     }
-    for( keyI in lap.items ){
-        let i = lap.items[keyI];
-        let par = document.getElementById(keyI).parentElement.parentElement;
-        par.children[2].innerHTML = `-${niceNumber( Math.floor( getCost( keyI, `item` ) ) )}  Đ`;
-        par.children[3].innerHTML = items[keyI].eff.replace(`Q`, 1+(i.level * global.upgradeInc));
-        par.children[4].children[1].innerHTML = `-${niceNumber( getUpgradeCost( keyI ) )}  Đ`;
+    else if( document.getElementById(`shopTab`).classList.contains(`active`) ){
+        for( keyI in lap.items ){
+            let i = lap.items[keyI];
+            let par = document.getElementById(keyI).parentElement.parentElement;
+            par.children[2].innerHTML = `-${niceNumber( Math.floor( getCost( keyI, `item` ) ) )}  Đ`;
+            par.children[3].innerHTML = items[keyI].eff.replace(`Q`, 1+(i.level * global.upgradeInc));
+            par.children[4].children[1].innerHTML = `-${niceNumber( getUpgradeCost( keyI ) )}  Đ`;
+        }
     }
-    for( keyH in home ){
-        let par = document.getElementById(keyH).parentElement.parentElement;
-        par.children[2].innerHTML = `-${niceNumber( Math.floor( getCost( keyH, `home` ) ) )}  Đ`;
+    else if( document.getElementById(`lodgingTab`).classList.contains(`active`) ){
+        for( keyH in home ){
+            let par = document.getElementById(keyH).parentElement.parentElement;
+            par.children[2].innerHTML = `-${niceNumber( Math.floor( getCost( keyH, `home` ) ) )}  Đ`;
+        }
     }
     document.getElementById(`providenceMulti`).children[1].innerHTML = `x${longLap.providence} to all XP gain`;
 }
@@ -1424,7 +1481,9 @@ function tabChange( target ){
     for( let i = 0; i < tt.length; i++ ){ tt[i].classList.add(`noDisplay`); }
     document.getElementById(target).classList.add(`active`);
     document.getElementById(s).classList.remove(`noDisplay`);
-    document.getElementById(target).classList.remove(`alert`);    
+    document.getElementById(target).classList.remove(`alert`);
+    updateTableValues();
+    updateAllXP();
 }
 
 function countdown(){
@@ -1461,6 +1520,9 @@ function loadState() {
         if( state.longLap !== null && state.longLap !== undefined ){ longLap = state.longLap; }
         if( state.auto !== null && state.auto !== undefined ){ auto = state.auto; }
         if( state.version == undefined || state.version !== version ){ fixSave(); }
+        for( key in lap.gods ){
+            if( lap.gods[key].level >= 100 && !medLap.boons[key] ){ offerBoon( key ); }
+        }
         setTimeout(() => {
             changeJob( lap.myProf );
             changeSkill( lap.mySkill );

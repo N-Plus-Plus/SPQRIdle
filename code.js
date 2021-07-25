@@ -132,14 +132,16 @@ function adjustAge(){
         if( medLap.boons.vesta ){ l += 5; }
         lap.lifespan = ( ( lap.lifespan * 99 + l ) / 100 );
         if( Math.abs( lap.lifespan - l ) < 0.01 ){ lap.lifespan = l; }
-        document.getElementById(`lifespan`).innerHTML = niceNumber( lap.lifespan );
-        for( key in home ){
-            let r = niceNumber( home[key].life * m );
-            if( medLap.boons.vesta ){
-                r = niceNumber( home[key].life * m + 5 );
+        else{
+            for( key in home ){
+                let r = niceNumber( home[key].life * m );
+                if( medLap.boons.vesta ){
+                    r = niceNumber( home[key].life * m + 5 );
+                }
+                document.getElementById(key+`Lifespan`).innerHTML = r;
             }
-            document.getElementById(key+`Lifespan`).innerHTML = r;
         }
+        document.getElementById(`lifespan`).innerHTML = niceNumber( lap.lifespan );
     }
 }
 
@@ -318,6 +320,28 @@ function levelUp( r, z, par ){
     lap[r][z].xp -= lap[r][z].next;
     par.children[1].innerHTML = niceNumber(lap[r][z].level);
     lap[r][z].next = deduceLevelXP( r, z, lap[r][z].level );
+    levelUpRefreshes( r, z, par )
+}
+
+function levelUpMany( r, z, par ){
+    let i = 0;
+    let x = JSON.parse( JSON.stringify( lap[r][z].xp ) );
+    let stop = false;
+    while( stop == false ){
+        if( x - deduceLevelXP( r, z, lap[r][z].level + i ) < 0 ){ stop = true; }
+        else if( i > 100 ){ stop = true; }
+        else{
+            x -= deduceLevelXP( r, z, lap[r][z].level + i )
+            lap[r][z].level++;        
+        }
+        i++;
+    }    
+    lap[r][z].xp = x;
+    lap[r][z].next = deduceLevelXP( r, z, lap[r][z].level );
+    levelUpRefreshes( r, z, par )
+}
+
+function levelUpRefreshes( r, z, par ){
     if( r !== `prof` ){
         let type = window[r][z].type;
         if( type == `increment` ){ lap[r][z].boost = 1 + ( global.inc * ( r == `gods` ? 5 : 1 ) ) * lap[r][z].level; }
@@ -338,34 +362,6 @@ function levelUp( r, z, par ){
         let x = ( global.speed / lap.speed * lap.skills.swiftness.boost ) * lap.gods.mercury.boost;
         if( medLap.boons.mercury ){ x *= 0.75; }
         changeSpeed( x );
-    }
-    if( lap[r][z].xp > lap[r][z].next ){ lap[r][z].xp = lap[r][z].next; }
-}
-
-function levelUpMany( r, z, par ){
-    let i = 0;
-    let x = JSON.parse( JSON.stringify( lap[r][z].xp ) );
-    let stop = false;
-    while( stop == false ){
-        if( x - deduceLevelXP( r, z, lap[r][z].level + i ) < 0 ){ stop = true; }
-        else if( i > 100 ){ stop = true; }
-        else{
-            x -= deduceLevelXP( r, z, lap[r][z].level + i )
-            lap[r][z].level++;        
-        }
-        i++;
-    }    
-    lap[r][z].xp = x;
-    lap[r][z].next = deduceLevelXP( r, z, lap[r][z].level );
-    if( r == `prof` ){ 
-        document.getElementById(`myProf`).children[2].innerHTML = lap[r][z].level;
-        par.children[2].innerHTML = `+${niceNumber( getEarnings( lap.myProf ).income )} Đ`;
-    }
-    else if( r == `skills` ){ 
-        document.getElementById(`mySkill`).children[2].innerHTML = lap[r][z].level;
-    }
-    else if( r == `gods` ){
-        if( lap[r][z].level >= 100 && !medLap.boons[z] ){ offerBoon( z ); }
     }
 }
 
@@ -479,10 +475,16 @@ function updateBars(){
             doBarStripes( p, `gods`, getXP( key, `gods` ), key );            
         }
     }
-    let n = Math.min( 100, lap.prof[lap.myProf].xp / lap.prof[lap.myProf].next * 100 );
+    updateQuickViewBars();
+}
+
+function updateQuickViewBars(){
+    let x = lap.prof[lap.myProf];
+    let n = Math.min( 100, x.xp / x.next * 100 );
     let s = ui.regStyle.replace(`Q`,n);
     let d = document.getElementById(`myProf`).children[0];
-    if( n > 100 ){
+    let ts = lap.tickSpeed;
+    if( getXP( lap.myProf, `prof` ) * 150 / ts >= x.next ){
         d.classList.add(`stripes`);
         d.style = ui.stripeStyle;
     }
@@ -490,10 +492,11 @@ function updateBars(){
         d.classList.remove(`stripes`);
         d.style = s;
     }
-    n = Math.min( 100, lap.skills[lap.mySkill].xp / lap.skills[lap.mySkill].next * 100 );
+    x = lap.skills[lap.mySkill];
+    n = Math.min( 100, x.xp / x.next * 100 );
     s = ui.regStyle.replace(`Q`,n);
     d = document.getElementById(`mySkill`).children[0];
-    if( n > 100 ){
+    if( getXP( lap.mySkill, `skills` ) * 150 / ts >= x.next ){
         d.classList.add(`stripes`);
         d.style = ui.stripeStyle;
     }
@@ -510,18 +513,16 @@ function updateBars(){
 }
 
 function fixBar( x, y ){
-    // work out if it should have stripes ...
-    //document.getElementById(`${x}Fill`).classList.add(`active`);
     setTimeout(() => {
         document.getElementById(`${x}Fill`).style = `width: ${y}%; transition: none;`;
-        //document.getElementById(`${x}Fill`).classList.remove(`active`);
     }, lap.tickSpeed / 2 );
 }
 
 function doBarStripes( p, x, xp, g ){
     let n = Math.min( p.xp / p.next * 100, 100 );
+    let ts = lap.tickSpeed
     let s = ui.regStyle.replace(`Q`,n);
-    if( xp >= p.next ){
+    if( xp * 150 / ts >= p.next ){
         s = ui.stripeStyle;
         if( x !== `gods` ){
             document.getElementById(lap[x] + 'Fill').classList.add(`stripes`);

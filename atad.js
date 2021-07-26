@@ -1,4 +1,4 @@
-var version = 0.09
+var version = `v. 0.010`
 
 var global = {
     speed: 100
@@ -174,7 +174,7 @@ var skills = {
     }
     , swiftness: {
         req: { skills: [ { type: `agility`, level: 25 } ] }
-        , eff: `xQ Game speed`
+        , eff: `xQ Tick speed`
         , base: 500
         , type: `decrement`
     }
@@ -312,7 +312,7 @@ var gods = {
         , base: global.worshipBase
     }
     , mercury: {
-        eff: `xQ Game speed`
+        eff: `xQ Tick speed`
         , type: `decrement`
         , base: global.worshipBase
     }
@@ -372,7 +372,7 @@ var modes = {
         , reward: 0.05
     }
     , bureaucratic: {
-        eff: `Five additional professions added on your path to Consul.`
+        eff: `Four additional professions added on your path to Consul.`
         , reward: 0.125
     }
     , pestilence: {

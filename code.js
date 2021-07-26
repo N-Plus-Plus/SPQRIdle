@@ -347,11 +347,11 @@ function levelUpRefreshes( r, z, par ){
         else if( type == `decrement` ){ lap[r][z].boost = Math.max( 0.1, 1 / ( Math.log10( 10 + lap[r][z].level / ( 25 / ( r == `gods` ? 5 : 1 ) ) ) ) ); }
     }
     if( r == `prof` ){ 
-        document.getElementById(`myProf`).children[2].innerHTML = lap[r][z].level;
+        document.getElementById(`myProf`).children[2].innerHTML = niceNumber( lap[r][z].level );
         par.children[2].innerHTML = `+${niceNumber( getEarnings( lap.myProf ).income )} Đ`;
     }
     else if( r == `skills` ){ 
-        document.getElementById(`mySkill`).children[2].innerHTML = lap[r][z].level;
+        document.getElementById(`mySkill`).children[2].innerHTML = niceNumber( lap[r][z].level );
     }
     else if( r == `gods` ){
         if( lap[r][z].level >= 100 && !medLap.boons[z] ){ offerBoon( z ); }
@@ -585,7 +585,7 @@ function changeJob( job ){
         lap.myProf = job;
         document.getElementById( lap.myProf ).children[0].classList.add(`active`);
         document.getElementById(`myProf`).children[1].innerHTML = nicify( job );
-        document.getElementById(`myProf`).children[2].innerHTML = lap.prof[job].level;
+        document.getElementById(`myProf`).children[2].innerHTML = niceNumber( lap.prof[job].level );
         let x = lap.prof[job].xp / lap.prof[job].next * 100;
         document.getElementById(`myProf`).children[0].style = ui.regStyle.replace(`Q`,x);
         if( job == `consul` ){ lap.isConsul = true; }
@@ -624,7 +624,7 @@ function changeSkill( s ){
             b.style = `width: ${Math.min( 100, lap.skills[s].xp / lap.skills[s].next * 100 )}%;`
         }
         document.getElementById(`mySkill`).children[1].innerHTML = titleCase( s );
-        document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[s].level;
+        document.getElementById(`mySkill`).children[2].innerHTML = niceNumber( lap.skills[s].level );
         document.getElementById( lap.mySkill + `Fill` ).classList.add(`active`);        
         if( lap.mySkill !== old ){
             if( lap.skills[old].xp > lap.skills[old].next ){ 
@@ -1542,8 +1542,8 @@ function loadState() {
             unlock( `focus` );
             unlock( `homeless` );
             testUpgradeCosts();
-            document.getElementById(`myProf`).children[2].innerHTML = lap.prof[lap.myProf].level;
-            document.getElementById(`mySkill`).children[2].innerHTML = lap.skills[lap.mySkill].level;
+            document.getElementById(`myProf`).children[2].innerHTML = niceNumber( lap.prof[lap.myProf].level );
+            document.getElementById(`mySkill`).children[2].innerHTML = niceNumber( lap.skills[lap.mySkill].level );
         }
         ticker( global.speed );
     }, 35 );

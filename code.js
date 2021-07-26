@@ -11,17 +11,18 @@ function onLoad(){
     essentialUI();
     lapAll();
     createDivs();
-    fixActive();
-    fixToggleDisplay();
     updateWatermarks();
     setTimeout(() => {
         updateGlobalIncome();
-    }, 20 );
+        fixToggleDisplay();
+        fixActive();
+        changeSpeed( 100 );
+    }, 50 );
 }
 
 function createDivs(){
     for( key in lap.skills ){ appendSkill( key ); }
-    for( key in lap.prof ){ appendJob( key ); }
+    for( key in prof ){ appendProf( key ); }
     for( key in home ){ appendHome( key ); }
     for( key in items ){ appendItem( key ); }
     for( key in gods ){ appendDivine( key ); }
@@ -113,10 +114,7 @@ function incrementDay(){
             longLap.unlocked = true;
             lap.isConsul = false;
             lap.consulDays = 0;
-            if( !longLap.complete ){
-                longLap.providence += modes[longLap.mode].reward;
-                longLap.complete = true;
-            }
+            if( !longLap.complete ){ completeMode(); }
         }
         checkUnlocks();
         updateGlobalIncome();
@@ -363,6 +361,7 @@ function levelUpRefreshes( r, z, par ){
         if( medLap.boons.mercury ){ x *= 0.75; }
         changeSpeed( x );
     }
+    if( lap[r][z].xp > lap[r][z].next ){ lap[r][z].xp = 0; }
 }
 
 function deduceLevelXP( r, z, b ){
@@ -434,7 +433,7 @@ function offerBoon( g ){
     document.getElementById(`noGods`).classList.add(`noDisplay`);
     document.getElementById(`yesGods`).classList.remove(`noDisplay`);
     document.getElementById(`getBoon`).setAttribute(`data-god`, g);
-    document.getElementById(`nextMultiAmount`).innerHTML = niceNumber( scale[countBoons()] +1 );
+    document.getElementById(`nextMultiAmount`).innerHTML = niceNumber( scale[countBoons() +1 ] );
 }
 
 function countBoons(){
@@ -591,7 +590,9 @@ function changeJob( job ){
         document.getElementById(`myProf`).children[0].style = ui.regStyle.replace(`Q`,x);
         if( job == `consul` ){ lap.isConsul = true; }
         else{ lap.isConsul = false; consulDays = 0; }
-        fixBar( old, Math.min( 100, lap.prof[old].xp / lap.prof[old].next * 100 ) );
+        if( old !== undefined ){
+            fixBar( old, Math.min( 100, lap.prof[old].xp / lap.prof[old].next * 100 ) );
+        }
     }
 }
 
@@ -828,6 +829,12 @@ function endLap(){
     document.getElementById(`rebirth`).classList.add('alert');
 }
 
+function completeMode(){
+    longLap.providence += modes[longLap.mode].reward;
+    longLap.complete = true;
+    document.getElementById(`${longLap.mode}Mode`).innerHTML = `Complete`
+}
+
 function rebirth( grade ){
     if( grade == `med` ){
         watermarks = {};
@@ -880,8 +887,10 @@ function rebirth( grade ){
     changeJob(`beggar`);
     changeHome(`homeless`);
     changeSkill(`focus`);
-    fixActive();
-    fixToggleDisplay();    
+    setTimeout(() => {
+        fixActive();
+        fixToggleDisplay();        
+    }, 50);
 }
 
 function lapAll(){
@@ -966,7 +975,7 @@ function lapAll(){
 
 function updateTableValues(){
     if( document.getElementById(`jobsTab`).classList.contains(`active`) ){
-        for( keyP in lap.prof ){
+        for( keyP in prof ){
             let p = lap.prof[keyP];
             let par = document.getElementById(keyP).parentElement.parentElement;
             par.children[1].innerHTML = niceNumber( p.level );
@@ -1052,7 +1061,7 @@ function profOverride( bureaucrat ){
     let p = 1, pm = 1, b = 7.5, bu = 1;
     let longProf = [];
     for( key in namedProfessions ){
-        if( bureaucrat && longProf.length >= 12 && bu < 6 ){
+        if( bureaucrat && longProf.length >= 13 && bu < 5 ){
             longProf.push(`rank_${bu}_bureaucrat`);
             bu++;
         }
@@ -1060,7 +1069,7 @@ function profOverride( bureaucrat ){
     }    
     for( key in longProf ){
         let n = longProf[key];
-        let pro = longProf[key+1];
+        //let pro = longProf[key+1];
         let r = longProf[key-1]
         prof[n] = {
             category: 0
@@ -1075,7 +1084,7 @@ function profOverride( bureaucrat ){
                     }
                 ]
             }
-            , promotes: pro == undefined ? `` : pro
+            //, promotes: pro == undefined ? `` : pro
         }
         p = round( p * 1.5, 0 );
         pm++;
@@ -1165,24 +1174,18 @@ function essentialUI(){
     </div>`
     document.getElementById(`boon`).innerHTML = `<span id="boonSpace"></span>`
     document.getElementById(`godsPanel`).innerHTML = h;
-    // document.getElementById(`subJobs`).innerHTML = template.replace(`Q`,`prof`);
-    // a = `<div class="optionBox">Automate:
-    //     <label class="switch"><input type="checkbox" id="skillsAuto"><span class="slide round"></span></label>
-    // </div>`;
-    // for( key in skills ){
-    //     a += `<div class="row"><div class="c20">${titleCase( key )}</div><div class="c10">X</div><div class="c70">|----|</div></div>`
-    // }
-    // document.getElementById(`subSkills`).innerHTML = a;
-    document.getElementById(`jobs`).appendChild( buildAutoToggle( `prof` ) );
-    document.getElementById(`skills`).appendChild( buildAutoToggle( `skills` ) );
-    document.getElementById(`lodging`).appendChild( buildAutoToggle( `homes` ) );
-    document.getElementById(`shop`).appendChild( buildAutoToggle( `items` ) );
-    document.getElementById(`divine`).appendChild( buildAutoToggle( `gods` ) );
+    setTimeout(() => {
+        document.getElementById(`jobs`).appendChild( buildAutoToggle( `prof` ) );
+        document.getElementById(`skills`).appendChild( buildAutoToggle( `skills` ) );
+        document.getElementById(`lodging`).appendChild( buildAutoToggle( `homes` ) );
+        document.getElementById(`shop`).appendChild( buildAutoToggle( `items` ) );
+        document.getElementById(`divine`).appendChild( buildAutoToggle( `gods` ) );
+    }, 50);
 }
 
 function buildDiv( type, a ){
     let output = ``;
-    if( type == 'job' ){
+    if( type == 'prof' ){
         output = `<div class="row noDisplay">
             <div class="c25 c0">
                 <div class="bar profBar" id="${a}">
@@ -1296,40 +1299,28 @@ function appendElement( e, type ){ // REVISIT - MAKE GENERIC
     document.getElementById(type).lastChild.outerHTML = buildDiv( type, e );
 }
 
-function appendJob( a ){
+function appendProf( a ){
     let x = document.createElement(`div`);
     document.getElementById(`cat${prof[a].category}`).appendChild(x);
-    document.getElementById(`cat${prof[a].category}`).lastChild.outerHTML = buildDiv( `job`, a );
-    // if( !document.getElementById(`jobsTab`).classList.contains(`active`) ){
-    //     document.getElementById(`jobsTab`).classList.add(`alert`);
-    // }
+    document.getElementById(`cat${prof[a].category}`).lastChild.outerHTML = buildDiv( `prof`, a );
 }
 
 function appendHome( h ){
     let x = document.createElement(`div`);
     document.getElementById(`lodging`).appendChild(x);
     document.getElementById(`lodging`).lastChild.outerHTML = buildDiv( `home`, h );
-    // if( !document.getElementById(`lodgingTab`).classList.contains(`active`) ){
-    //     document.getElementById(`lodgingTab`).classList.add(`alert`);
-    // }
 }
 
 function appendItem( i ){
     let x = document.createElement(`div`);
     document.getElementById(`shop`).appendChild(x);
     document.getElementById(`shop`).lastChild.outerHTML = buildDiv( `item`, i );
-    // if( !document.getElementById(`shopTab`).classList.contains(`active`) ){
-    //     document.getElementById(`shopTab`).classList.add(`alert`);
-    // }
 }
 
 function appendSkill( s ){
     let x = document.createElement(`div`);
     document.getElementById(`skills`).children[0].appendChild(x);
     document.getElementById(`skills`).children[0].lastChild.outerHTML = buildDiv( `skill`, s );
-    // if( !document.getElementById(`skillsTab`).classList.contains(`active`) ){
-    //     document.getElementById(`skillsTab`).classList.add(`alert`);
-    // }
 }
 
 function appendBoon( b ){
@@ -1342,9 +1333,6 @@ function appendMode( m ){
     let x = document.createElement(`div`);
     document.getElementById(`modesSpace`).appendChild(x);
     document.getElementById(`modesSpace`).lastChild.outerHTML = buildDiv( `mode`, m );
-    // if( !document.getElementById(`skillsTab`).classList.contains(`active`) ){
-    //     document.getElementById(`skillsTab`).classList.add(`alert`);
-    // }
 }
 
 function appendDivine( g ){
@@ -1376,6 +1364,7 @@ function fixActive(){
             document.getElementById(g+`Fill`).classList.remove(`active`);
             document.getElementById(g+`Fill`).parentElement.children[1].children[0].classList.add(`darken`);
         }
+        fixBar( g, Math.min( 100, lap.gods[g].xp / lap.gods[g].next * 100 ) );
     }
     document.getElementById(`slider`).value = lap.tribute;
     for( i in lap.items ){
@@ -1386,6 +1375,12 @@ function fixActive(){
         if( auto[key].automate ){
             document.getElementById(`${key}Auto`).checked = true;
         }
+    }
+    for( key in skills ){
+        fixBar( key, Math.min( 100, lap.skills[key].xp / lap.skills[key].next * 100 ) );
+    }
+    for( key in prof ){
+        fixBar( key, Math.min( 100, lap.prof[key].xp / lap.prof[key].next * 100 ) );
     }
     document.getElementById(`${longLap.mode}Mode`).classList.add(`active`);  
     document.getElementById(`${longLap.mode}Mode`).innerHTML = `Active`;
@@ -1529,12 +1524,14 @@ function loadState() {
             changeSkill( lap.mySkill );
             changeHome( lap.myHome );
             updateTableValues();    
-        }, 50 );   
+        }, 50 );
     }
-    else{        
-        changeJob( `beggar` );
-        changeSkill( `focus` );
-        changeHome( `homeless` );
+    else{
+        setTimeout(() => {
+            changeJob( `beggar` );
+            changeSkill( `focus` );
+            changeHome( `homeless` );
+        }, 50 );
     }
     longLap.safety = null;
     longLap.nextMode = null;
@@ -1576,7 +1573,7 @@ function fixSave(){
     homeOverride( longLap.mode == `pestilence` );
     lapAll();
     rebirth();
-    ticker( 10 );
+    // ticker( 100 );
     saveState();    
     setTimeout(() => {
         location.reload();        
@@ -1590,19 +1587,13 @@ function hardReset(){
 
 function round(value, exp) {
     if (typeof exp === 'undefined' || +exp === 0)
-      return Math.round(value);
-  
+    return Math.round(value);  
     value = +value;
-    exp = +exp;
-  
+    exp = +exp;  
     if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0))
-      return NaN;
-  
-    // Shift
+    return NaN;
     value = value.toString().split('e');
     value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp)));
-  
-    // Shift back
     value = value.toString().split('e');
     return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
 }

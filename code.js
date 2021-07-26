@@ -975,7 +975,7 @@ function lapAll(){
 
 function updateTableValues(){
     if( document.getElementById(`jobsTab`).classList.contains(`active`) ){
-        for( keyP in prof ){
+        for( keyP in lap.prof ){
             let p = lap.prof[keyP];
             let par = document.getElementById(keyP).parentElement.parentElement;
             par.children[1].innerHTML = niceNumber( p.level );

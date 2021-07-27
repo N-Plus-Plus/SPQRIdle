@@ -175,7 +175,7 @@ tr{
     margin: 0 0 1 0;
 }
 
-#boonSpace{
+#boons{
     position: relative;
     padding: 2.5rem;
     display: flex;
@@ -231,7 +231,7 @@ tr{
     margin-right: 0.5rem;
 }
 
-.noDisplay,.main.noDisplay{ display: none; }
+.noDisplay,.main.noDisplay,#boons.noDisplay{ display: none; }
 
 .row{
     width: 100%;

@@ -85,7 +85,7 @@ var boons = {
     , apollo: `Agi and Cha get x2 boost from Focus`
     , minerva: `Int and Wis get x2 boost from Focus`
     , diana: `Item Upgrade costs scale exponent reduced by 25%`
-    , mercury: `x0.75 game speed increase`
+    , mercury: `x0.75 Tick speed`
     , vesta: `+5 years of life expectancy`
 }
 

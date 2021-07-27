@@ -16,19 +16,25 @@ function onLoad(){
         updateGlobalIncome();
         fixToggleDisplay();
         fixActive();
-        changeSpeed( 100 );
+        let x = ( global.speed / lap.speed * lap.skills.swiftness.boost ) * lap.gods.mercury.boost;
+        changeSpeed( x );
     }, 50 );
 }
 
 function createDivs(){
-    for( key in lap.skills ){ appendSkill( key ); }
-    for( key in prof ){ appendProf( key ); }
-    for( key in home ){ appendHome( key ); }
-    for( key in items ){ appendItem( key ); }
-    for( key in gods ){ appendDivine( key ); }
-    for( key in boons ){ appendBoon( key ); }
-    for( key in modes ){ appendMode( key ); }
+    for( key in lap.skills ){ appendElement( key, `skills` ); }
+    for( key in prof ){ appendElement( key, `prof` ); }
+    for( key in home ){ appendElement( key, `homes` ); }
+    for( key in items ){ appendElement( key, `items` ); }
+    for( key in gods ){ appendElement( key, `gods` ); }
+    for( key in boons ){ appendElement( key, `boons` ); }
+    for( key in modes ){ appendElement( key, `modes` ); }
     appendCostPreviews();
+    document.getElementById(`prof`).appendChild( buildAutoToggle( `prof` ) );
+    document.getElementById(`skills`).appendChild( buildAutoToggle( `skills` ) );
+    document.getElementById(`homes`).appendChild( buildAutoToggle( `homes` ) );
+    document.getElementById(`items`).appendChild( buildAutoToggle( `items` ) );
+    document.getElementById(`gods`).appendChild( buildAutoToggle( `gods` ) );
 }
 
 function ticker( dur ){
@@ -57,15 +63,15 @@ function clicked( elem ){
     if( i == `pause` ){ pauseGame(); }
     else if( c.contains(`profBar`) ){ changeJob( i ); }
     else if( c.contains(`skillBar`) ){ changeSkill( i ); }
-    else if( c.contains(`divineBar`) ){ worship( i ); }
+    else if( c.contains(`godsBar`) ){ worship( i ); }
     else if( i == `rebirth` ){ rebirth(); }
     else if( c.contains(`tab`) ){ tabChange( i ); }
     else if( c.contains(`home`) ){ if( !auto.homes.automate ){ changeHome( i ); } }
     else if( c.contains(`item`) ){ donDoff( i ); }
     else if( c.contains(`upgrade`) ){ upgradeItem( i.replace(`Upgrade`,``) ); }
-    else if( i == `myProf` ){ tabChange( `jobsTab` ) }
+    else if( i == `myProf` ){ tabChange( `profTab` ) }
     else if( i == `mySkill` ){ tabChange( `skillsTab` ) }
-    else if( c.contains(`godCircle`) ){ tabChange( `divineTab` ) }
+    else if( c.contains(`godCircle`) ){ tabChange( `godsTab` ) }
     else if( i == `fixSave` ){ fixSave(); }
     else if( i == `hardReset` ){ hardReset(); }
     else if( i == `export` ){ exportState(); }
@@ -462,13 +468,13 @@ function updateGlobalIncome(){
 }
 
 function updateBars(){
-    if( document.getElementById(`jobsTab`).classList.contains(`active`) ){
+    if( document.getElementById(`profTab`).classList.contains(`active`) ){
         doBarStripes( lap.prof[lap.myProf], `myProf`, getXP( lap.myProf, `prof` ) );
     }
     else if( document.getElementById(`skillsTab`).classList.contains(`active`) ){
         doBarStripes( lap.skills[lap.mySkill], `mySkill`, getXP( lap.mySkill, `skills` ) );
     }
-    else if( document.getElementById(`divineTab`).classList.contains(`active`) ){
+    else if( document.getElementById(`godsTab`).classList.contains(`active`) ){
         for( key in lap.gods ){
             let p = lap.gods[key];
             doBarStripes( p, `gods`, getXP( key, `gods` ), key );            
@@ -547,7 +553,7 @@ function doBarStripes( p, x, xp, g ){
 }
 
 function updateAllXP(){
-    if( document.getElementById(`jobsTab`).classList.contains(`active`) ){
+    if( document.getElementById(`profTab`).classList.contains(`active`) ){
         for( key in lap.prof ){
             let x = niceNumber( getXP( key, `prof` ) );
             if( document.getElementById(`${key}XP`) == null ){}
@@ -561,7 +567,7 @@ function updateAllXP(){
             document.getElementById(`${key}Boost`).innerHTML = skills[key].eff.replace(`Q`, niceNumber( lap.skills[key].boost ) );
         }
     }
-    else if( document.getElementById(`divineTab`).classList.contains(`active`) ){
+    else if( document.getElementById(`godsTab`).classList.contains(`active`) ){
         for( key in lap.gods ){
             let x = niceNumber( getXP( key, `gods` ) );
             document.getElementById(`${key}XP`).innerHTML = x;
@@ -778,7 +784,7 @@ function checkUnlocks(){
             type = i;
         }
     }
-    prev = document.getElementById(`lodgingNext`);
+    prev = document.getElementById(`homesNext`);
     let none = true;
     for( key in home ){
         if( lap.homes[key].unlocked ){}
@@ -789,7 +795,7 @@ function checkUnlocks(){
         }
     }
     if( none ){ prev.classList.add(`noDisplay`); }
-    prev = document.getElementById(`shopNext`);
+    prev = document.getElementById(`itemsNext`);
     none = true;
     for( key in items ){
         if( lap.items[key].unlocked ){}
@@ -879,14 +885,16 @@ function rebirth( grade ){
     document.getElementById(`yesGods`).classList.add(`noDisplay`);
     document.getElementById(`noGods`).classList.remove(`noDisplay`);
     lapAll();
-    tabChange(`jobsTab`);
     essentialUI();
     createDivs();
     checkUnlocks();
     updateWatermarks();
+    tabChange(`profTab`);
     changeJob(`beggar`);
     changeHome(`homeless`);
     changeSkill(`focus`);
+    let x = ( global.speed / lap.speed * lap.skills.swiftness.boost ) * lap.gods.mercury.boost;
+    changeSpeed( x );
     setTimeout(() => {
         fixActive();
         fixToggleDisplay();        
@@ -974,7 +982,7 @@ function lapAll(){
 }
 
 function updateTableValues(){
-    if( document.getElementById(`jobsTab`).classList.contains(`active`) ){
+    if( document.getElementById(`profTab`).classList.contains(`active`) ){
         for( keyP in lap.prof ){
             let p = lap.prof[keyP];
             let par = document.getElementById(keyP).parentElement.parentElement;
@@ -996,7 +1004,7 @@ function updateTableValues(){
             par.children[5].innerHTML = niceNumber( s.max );
         }
     }
-    else if( document.getElementById(`divineTab`).classList.contains(`active`) ){
+    else if( document.getElementById(`godsTab`).classList.contains(`active`) ){
         for( keyD in lap.gods ){
             let g = lap.gods[keyD];
             let par = document.getElementById(keyD).parentElement.parentElement;
@@ -1007,7 +1015,7 @@ function updateTableValues(){
             par.children[5].innerHTML = niceNumber( g.max );
         }
     }
-    else if( document.getElementById(`shopTab`).classList.contains(`active`) ){
+    else if( document.getElementById(`itemsTab`).classList.contains(`active`) ){
         for( keyI in lap.items ){
             let i = lap.items[keyI];
             let par = document.getElementById(keyI).parentElement.parentElement;
@@ -1016,7 +1024,7 @@ function updateTableValues(){
             par.children[4].children[1].innerHTML = `-${niceNumber( getUpgradeCost( keyI ) )}  Đ`;
         }
     }
-    else if( document.getElementById(`lodgingTab`).classList.contains(`active`) ){
+    else if( document.getElementById(`homesTab`).classList.contains(`active`) ){
         for( keyH in home ){
             let par = document.getElementById(keyH).parentElement.parentElement;
             par.children[2].innerHTML = `-${niceNumber( Math.floor( getCost( keyH, `home` ) ) )}  Đ`;
@@ -1110,7 +1118,7 @@ function homeOverride( pestilence ){
 }
 
 function essentialUI(){
-    document.getElementById(`jobs`).innerHTML = `<span id="cat0">
+    document.getElementById(`prof`).innerHTML = `<span id="cat0">
         <div class="row rProf">
             <div class="c25">Professions</div>
             <div class="c10">Level</div>
@@ -1119,33 +1127,30 @@ function essentialUI(){
             <div class="c20">XP left</div>
             <div class="c10">Max</div>
         </div>
-    </span>
-    <span><div class="row rGhost"><div class="c100" id="profNext"></div></div></span>`
-    document.getElementById(`skills`).innerHTML = `<span>
-        <div class="row rProf">
+    </span>`
+    document.getElementById(`skills`).innerHTML = `<div class="row rProf">
             <div class="c25">Skills</div>
             <div class="c10">Level</div>
             <div class="c25">Effects</div>
             <div class="c15">XP /day</div>
             <div class="c15">XP left</div>
             <div class="c10">Max</div>
-        </div>
-    </span>`
-    document.getElementById(`lodging`).innerHTML = `<div class="row rProf">
+        </div>`
+    document.getElementById(`homes`).innerHTML = `<div class="row rProf">
         <div class="c20">Dwellings</div>
         <div class="c15">Active</div>
         <div class="c15">Đ /day</div>
         <div class="c15">Lifespan</div>
         <div class="c35">Effects</div>
     </div>`
-    document.getElementById(`shop`).innerHTML = `<div class="row rProf">
+    document.getElementById(`items`).innerHTML = `<div class="row rProf">
         <div class="c20">Items</div>
         <div class="c15">Active</div>
         <div class="c15">Đ /day</div>
         <div class="c20">Effects</div>
         <div class="c30">Upgrade</div>
     </div>`
-    document.getElementById(`divine`).innerHTML = `<div class="sliderRow">
+    document.getElementById(`gods`).innerHTML = `<div class="sliderRow">
         <div class="denom">Tithings</div>    
         <input id="slider" class="slider" type="range" min="0" max="100" value="${lap.tribute}">
         <div class="denom tribute" id="tribute">0% (-0 Đ)</div>
@@ -1172,15 +1177,7 @@ function essentialUI(){
         <div class="c20">Reward</div>
         <div class="c10">Attempt</div>
     </div>`
-    document.getElementById(`boon`).innerHTML = `<span id="boonSpace"></span>`
     document.getElementById(`godsPanel`).innerHTML = h;
-    setTimeout(() => {
-        document.getElementById(`jobs`).appendChild( buildAutoToggle( `prof` ) );
-        document.getElementById(`skills`).appendChild( buildAutoToggle( `skills` ) );
-        document.getElementById(`lodging`).appendChild( buildAutoToggle( `homes` ) );
-        document.getElementById(`shop`).appendChild( buildAutoToggle( `items` ) );
-        document.getElementById(`divine`).appendChild( buildAutoToggle( `gods` ) );
-    }, 50);
 }
 
 function buildDiv( type, a ){
@@ -1200,7 +1197,7 @@ function buildDiv( type, a ){
             <div class="c10" id="${a}Max">${lap.prof[a].max}</div>
         </div>`
     }
-    else if( type == 'home' ){
+    else if( type == 'homes' ){
         output = `<div class="row noDisplay">
             <div class="c20 c01">${titleCase(a)}</div>
             <div class="c15">
@@ -1211,7 +1208,7 @@ function buildDiv( type, a ){
             <div class="c35">x${niceNumber(1+(home[a].boost-1))} to all XP gain</div>
         </div>`
     }
-    else if( type == 'item' ){
+    else if( type == 'items' ){
         output = `<div class="row noDisplay">
             <div class="c20 c01">${titleCase((a.replace(`_`,` `)).replace(`,`,` `))}</div>
             <div class="c15">
@@ -1222,7 +1219,7 @@ function buildDiv( type, a ){
             <div class="c30"><div class="button upgrade" id="${a}Upgrade">Upgrade</div><div class="upgCost">-${niceNumber( getUpgradeCost( a ) )} Đ</div></div>
         </div>`
     }
-    else if( type == 'skill' ){
+    else if( type == 'skills' ){
         output = `<div class="row noDisplay">
             <div class="c25 c0">
             ${skills[a].parent ? '' : '<div class="space"></div>' }
@@ -1243,7 +1240,7 @@ function buildDiv( type, a ){
     else if( type == 'gods' ){
         output = `<div class="row">
             <div class="c25 c0">
-                <div class="bar divineBar" id="${a}">
+                <div class="bar godsBar" id="${a}">
                     <div class="barFill godsFill" id="${a}Fill" style="width: 0%;"></div>
                     <div class="barLabel"><div class="tinyGod ${a}"></div>${titleCase(a)}</div>
                 </div>
@@ -1255,7 +1252,7 @@ function buildDiv( type, a ){
             <div class="c10" id="${a}Max">${lap.gods[a].max}</div>
         </div>`
     }
-    else if( type == 'mode' ){
+    else if( type == 'modes' ){
         output = `<div class="row">
             <div class="c15 c0">${titleCase(a)}</div>
             <div class="c55">${modes[a].eff}</div>
@@ -1265,7 +1262,7 @@ function buildDiv( type, a ){
             </div>
         </div>`
     }
-    else if( type == 'boon' ){
+    else if( type == 'boons' ){
         output = `<div class="boonBox" data-god="${a}">
             <div class="boonText">${titleCase( a )}</div>
             <div class="bigIco ${a}"></div>
@@ -1293,64 +1290,26 @@ function updateRing( selector, percent ){
     circle.style.strokeDashoffset = offset;
 }
 
-function appendElement( e, type ){ // REVISIT - MAKE GENERIC
+function appendElement( e, type ){
     let x = document.createElement(`div`);
     document.getElementById(type).appendChild(x);
     document.getElementById(type).lastChild.outerHTML = buildDiv( type, e );
 }
 
-function appendProf( a ){
-    let x = document.createElement(`div`);
-    document.getElementById(`cat${prof[a].category}`).appendChild(x);
-    document.getElementById(`cat${prof[a].category}`).lastChild.outerHTML = buildDiv( `prof`, a );
-}
-
-function appendHome( h ){
-    let x = document.createElement(`div`);
-    document.getElementById(`lodging`).appendChild(x);
-    document.getElementById(`lodging`).lastChild.outerHTML = buildDiv( `home`, h );
-}
-
-function appendItem( i ){
-    let x = document.createElement(`div`);
-    document.getElementById(`shop`).appendChild(x);
-    document.getElementById(`shop`).lastChild.outerHTML = buildDiv( `item`, i );
-}
-
-function appendSkill( s ){
-    let x = document.createElement(`div`);
-    document.getElementById(`skills`).children[0].appendChild(x);
-    document.getElementById(`skills`).children[0].lastChild.outerHTML = buildDiv( `skill`, s );
-}
-
-function appendBoon( b ){
-    let x = document.createElement(`div`);
-    document.getElementById(`boonSpace`).appendChild(x);
-    document.getElementById(`boonSpace`).lastChild.outerHTML = buildDiv( `boon`, b );
-}
-
-function appendMode( m ){
-    let x = document.createElement(`div`);
-    document.getElementById(`modesSpace`).appendChild(x);
-    document.getElementById(`modesSpace`).lastChild.outerHTML = buildDiv( `mode`, m );
-}
-
-function appendDivine( g ){
-    let x = document.createElement(`div`);
-    document.getElementById(`divine`).appendChild(x);
-    document.getElementById(`divine`).lastChild.outerHTML = buildDiv( `gods`, g );
-}
-
 function appendCostPreviews(){
-    let elem = document.getElementById(`lodging`);
+    let elem = document.getElementById(`homes`);
     let x = document.createElement(`div`);
     x.classList = `row rGhost`;
-    x.innerHTML = `<div class="c100" id="lodgingNext"></div>`
+    x.innerHTML = `<div class="c100" id="homesNext"></div>`
     elem.appendChild(x);
-    elem = document.getElementById(`shop`);
+    elem = document.getElementById(`items`);
     x = document.createElement(`div`);
     x.classList = `row rGhost`;
-    x.innerHTML = `<div class="c100" id="shopNext"></div>`
+    x.innerHTML = `<div class="c100" id="itemsNext"></div>`
+    elem.appendChild(x);
+    elem = document.getElementById(`prof`);
+    x = document.createElement(`span`);
+    x.innerHTML = `<div class="row rGhost"><div class="c100" id="profNext"></div></div>`
     elem.appendChild(x);
 }
 
@@ -1396,7 +1355,7 @@ function fixActive(){
             boonC[i].classList.remove(`earned`);
         }
     }
-    if( countBoons() > 0 || longLap.unlocked ){ document.getElementById(`boonTab`).classList.remove(`noDisplay`); }
+    if( countBoons() > 0 || longLap.unlocked ){ document.getElementById(`boonsTab`).classList.remove(`noDisplay`); }
     if( longLap.unlocked ){
         document.getElementById(`modesTab`).classList.remove(`noDisplay`);
         document.getElementById(`providenceMulti`).classList.remove(`noDisplay`);
@@ -1437,18 +1396,23 @@ function buildSi(){
 function niceNumber( x ){
     let o = ``;
     if( x < 1000 && x > -1000 ){ o = round(x,2)}
-    else if( x < 1000000 ){ o = round(x,0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }
+    else if( x < 1000000 && x > -1000000 ){ o = round(x,0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }
     else{ o = abbrevNum( x ) };
     return o;
 }
 
 function abbrevNum(number){
+    let neg = false;
+    if( number < 0 ){
+        neg = true;
+        number = Math.abs( number );
+    }
     var tier = Math.log10(number) / 3 | 0;
     if(tier == 0) return number;
     var suffix = si[tier];
     var scale = Math.pow(10, tier * 3);
     var scaled = number / scale;
-    return scaled.toPrecision(4) + suffix;
+    return ( neg ? `-` : `` ) + scaled.toPrecision(4) + suffix;
 }
 
 function logThis(base, x) {
@@ -1511,7 +1475,8 @@ function loadState() {
     if( state !== null && state.lap !== undefined ){
         watermarks = state.watermarks;
         lap = state.lap;
-        changeSpeed( lap.tickSpeed );
+        let x = ( global.speed / lap.speed * lap.skills.swiftness.boost ) * lap.gods.mercury.boost;
+        changeSpeed( x );
         if( state.medLap !== null && state.medLap !== undefined ){ medLap = state.medLap; }
         if( state.longLap !== null && state.longLap !== undefined ){ longLap = state.longLap; }
         if( state.auto !== null && state.auto !== undefined ){ auto = state.auto; }
@@ -1573,7 +1538,6 @@ function fixSave(){
     homeOverride( longLap.mode == `pestilence` );
     lapAll();
     rebirth();
-    // ticker( 100 );
     saveState();    
     setTimeout(() => {
         location.reload();        

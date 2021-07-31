@@ -635,7 +635,8 @@ function changeSkill( s ){
         if( lap.mySkill !== old ){
             if( lap.skills[old].xp > lap.skills[old].next ){ 
                 let ps = document.getElementById( lap.mySkill ).parentElement.parentElement;
-                levelUp( `skills`, old, ps ); }
+                levelUp( `skills`, old, ps );
+            }            
             fixBar( old, Math.min( 100, lap.skills[old].xp / lap.skills[old].next * 100 ) );
         }
     }
@@ -884,18 +885,18 @@ function rebirth( grade ){
     document.getElementById(`retryTab`).classList.add(`noDisplay`);
     document.getElementById(`yesGods`).classList.add(`noDisplay`);
     document.getElementById(`noGods`).classList.remove(`noDisplay`);
-    lapAll();
     essentialUI();
+    lapAll();
     createDivs();
     checkUnlocks();
     updateWatermarks();
-    tabChange(`profTab`);
     changeJob(`beggar`);
     changeHome(`homeless`);
     changeSkill(`focus`);
     let x = ( global.speed / lap.speed * lap.skills.swiftness.boost ) * lap.gods.mercury.boost;
     changeSpeed( x );
     setTimeout(() => {
+        tabChange(`profTab`);
         fixActive();
         fixToggleDisplay();        
     }, 50);
@@ -1127,7 +1128,7 @@ function essentialUI(){
             <div class="c20">XP left</div>
             <div class="c10">Max</div>
         </div>
-    </span>`
+    </span>`;
     document.getElementById(`skills`).innerHTML = `<div class="row rProf">
             <div class="c25">Skills</div>
             <div class="c10">Level</div>
@@ -1135,21 +1136,21 @@ function essentialUI(){
             <div class="c15">XP /day</div>
             <div class="c15">XP left</div>
             <div class="c10">Max</div>
-        </div>`
+        </div>`;
     document.getElementById(`homes`).innerHTML = `<div class="row rProf">
         <div class="c20">Dwellings</div>
         <div class="c15">Active</div>
         <div class="c15">Đ /day</div>
         <div class="c15">Lifespan</div>
         <div class="c35">Effects</div>
-    </div>`
+    </div>`;
     document.getElementById(`items`).innerHTML = `<div class="row rProf">
         <div class="c20">Items</div>
         <div class="c15">Active</div>
         <div class="c15">Đ /day</div>
         <div class="c20">Effects</div>
         <div class="c30">Upgrade</div>
-    </div>`
+    </div>`;
     document.getElementById(`gods`).innerHTML = `<div class="sliderRow">
         <div class="denom">Tithings</div>    
         <input id="slider" class="slider" type="range" min="0" max="100" value="${lap.tribute}">
@@ -1162,22 +1163,30 @@ function essentialUI(){
         <div class="c15">XP /day</div>
         <div class="c15">XP left</div>
         <div class="c10">Max</div>
-    </div>`
-    let h = ``
+    </div>`;
+    let h = ``;
     for( key in gods ){
         h += `<div class="godPrev"><svg class="godRing" width="3rem" height="3rem">
             <circle id="${key}Ring" class="godCircle" stroke-width="1.25rem" fill="transparent" r="0.5rem" cx="1.5rem" cy="1.5rem"/>
         </svg>
         <div class="medGod ${key}"></div>
-        </div>`
+        </div>`;
     }
-    document.getElementById(`modesSpace`).innerHTML = `<div class="row rProf">
+    document.getElementById(`godsPanel`).innerHTML = h;
+    document.getElementById(`modes`).innerHTML = `<div class="informational">
+        <p>You are currently playing in: <b id="modeDisplay">Normal</b> Mode</p>
+        <p>You have earned the right to choose a different Mode to attempt.</p>
+        <p>When you begin a new Mode run, all progress will be fully reset, except for Providence.</p>
+        <p>To complete a Mode you must hold the position of Consul for 365 consecutive days.</p>
+        <p>You may abandon an attempt at a Mode run at any time by selecting another from this screen.</p>
+    </div>
+    <div class="row rProf">
         <div class="c15">Mode</div>
         <div class="c55">Description</div>
         <div class="c20">Reward</div>
         <div class="c10">Attempt</div>
-    </div>`
-    document.getElementById(`godsPanel`).innerHTML = h;
+    </div>`;
+    document.getElementById(`boons`).innerHTML = ``;
 }
 
 function buildDiv( type, a ){
@@ -1310,6 +1319,10 @@ function appendCostPreviews(){
     elem = document.getElementById(`prof`);
     x = document.createElement(`span`);
     x.innerHTML = `<div class="row rGhost"><div class="c100" id="profNext"></div></div>`
+    elem.appendChild(x);
+    elem = document.getElementById(`modes`);
+    x = document.createElement(`span`);
+    x.innerHTML = `<div class="informational segment rGhost"><p>Note: You can (and will likely need to) complete Modes multiple times and receive rewards each time.</p></div>`
     elem.appendChild(x);
 }
 
